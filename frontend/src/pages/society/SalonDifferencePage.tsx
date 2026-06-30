@@ -11,7 +11,7 @@ const reveal = {
 export function SalonDifferencePage() {
   return (
     <main className="min-h-svh bg-ink">
-      <section className="border-b border-parchment/10 bg-[radial-gradient(circle_at_22%_16%,rgba(177,132,65,0.17),transparent_32%),linear-gradient(180deg,#080706,#11100e)]">
+      <section className="paper-texture border-b border-brass/25 bg-[radial-gradient(circle_at_22%_16%,rgba(176,141,87,0.2),transparent_32%),linear-gradient(180deg,#2b1e17,#3e2a1f)]">
         <SiteHeader />
         <motion.div
           animate="visible"
@@ -28,7 +28,7 @@ export function SalonDifferencePage() {
             </h1>
           </motion.div>
           <motion.div
-            className="border-l border-brass/45 pl-6 text-base leading-8 text-parchment/72 sm:text-lg"
+            className="border-l border-brass/45 pl-6 text-base leading-8 text-parchment/78 sm:text-lg"
             variants={reveal}
           >
             <p>
@@ -45,7 +45,7 @@ export function SalonDifferencePage() {
         </motion.div>
       </section>
 
-      <section className="px-5 py-20 sm:px-8 lg:px-10">
+      <section className="bg-[#241b15] px-5 py-20 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="flex max-w-3xl items-start gap-5">
             <Scale aria-hidden="true" className="mt-1 size-7 text-brass" strokeWidth={1.5} />
@@ -61,7 +61,7 @@ export function SalonDifferencePage() {
           <div className="mt-10 grid gap-5">
             {salonDistinctions.map((item) => (
               <article
-                className="grid gap-5 border border-parchment/12 bg-mahogany/25 p-6 md:grid-cols-2"
+                className="grid gap-5 rounded-[1rem] border border-brass/30 bg-[#3d2d24]/72 p-6 shadow-[inset_0_1px_0_rgba(255,244,210,0.08),0_18px_54px_rgba(35,21,13,0.24)] md:grid-cols-2"
                 key={item.ordinary}
               >
                 <p className="text-sm leading-7 text-parchment/58">{item.ordinary}</p>
@@ -72,7 +72,7 @@ export function SalonDifferencePage() {
         </div>
       </section>
 
-      <section className="border-t border-parchment/10 bg-stone px-5 py-20 sm:px-8 lg:px-10">
+      <section className="wood-panel border-t border-brass/25 px-5 py-20 sm:px-8 lg:px-10">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.75fr_1.25fr]">
           <div>
             <ScrollText aria-hidden="true" className="size-8 text-brass" strokeWidth={1.5} />
@@ -84,7 +84,10 @@ export function SalonDifferencePage() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             {salonPractices.map((practice) => (
-              <article className="border border-parchment/12 bg-ink/50 p-6" key={practice.title}>
+              <article
+                className="rounded-[1rem] border border-brass/30 bg-[#2b1e17]/82 p-6 shadow-[inset_0_1px_0_rgba(255,244,210,0.08),0_18px_54px_rgba(0,0,0,0.2)]"
+                key={practice.title}
+              >
                 <h3 className="font-serif text-2xl text-parchment">{practice.title}</h3>
                 <p className="mt-4 text-sm leading-7 text-parchment/66">{practice.body}</p>
               </article>
