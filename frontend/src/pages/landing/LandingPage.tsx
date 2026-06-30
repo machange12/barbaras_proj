@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { motion } from 'framer-motion'
 import {
   Archive,
@@ -10,6 +12,7 @@ import {
   ScrollText,
   Send,
   Sparkles,
+  Users,
 } from 'lucide-react'
 import { SiteHeader } from '../../components/layout/SiteHeader'
 import { ButtonLink } from '../../components/ui/ButtonLink'
@@ -100,12 +103,40 @@ const essayItems = [
   },
 ]
 
+const eventItems = [
+  {
+    title: 'Salon Evening • March 18',
+    detail: 'A guided discussion on political friendship and the price of loyalty.',
+  },
+  {
+    title: 'Reading Circle • April 2',
+    detail: 'A slow reading of selected passages from civic and literary essays.',
+  },
+]
+
+const readingPrompts = [
+  'What question does this author ask but never fully answer?',
+  'Which passage feels most like a public argument, and why?',
+  'Where does the text invite you to disagree?',
+]
+
 const fadeIn = {
   hidden: { opacity: 0, y: 18 },
   visible: { opacity: 1, y: 0 },
 }
 
 export function LandingPage() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [question, setQuestion] = useState('')
+  const [intent, setIntent] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSubmitted(true)
+  }
+
   return (
     <main className="overflow-hidden">
       <section className="dust-field relative isolate min-h-svh overflow-hidden border-b border-brass/30">
@@ -217,6 +248,16 @@ export function LandingPage() {
             <p className="mt-6 text-base leading-8 text-parchment/74">
               Each volume waits beside a lamp, a note, and an invitation to read more slowly than usual.
             </p>
+            <div className="mt-10 space-y-4 rounded-[1rem] border border-brass/20 bg-[#3a2721]/85 p-6 text-sm leading-7 text-parchment/82">
+              <p className="font-serif text-sm uppercase tracking-[0.24em] text-brass">Reading prompts</p>
+              <ul className="space-y-3">
+                {readingPrompts.map((prompt) => (
+                  <li key={prompt} className="rounded-[0.85rem] border border-[#b08d57]/15 bg-[#271d18]/80 px-4 py-3">
+                    {prompt}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
           <div className="room-frame rounded-[1.4rem] bg-[#3e2a1f]/92 p-7 sm:p-8">
             <div className="mb-6 flex items-center justify-between border-b border-brass/20 pb-4">
@@ -368,6 +409,33 @@ export function LandingPage() {
 
       <motion.section
         className="border-b border-brass/20 bg-[#3b1f1f] px-5 py-20 sm:px-8 lg:px-10"
+        id="events"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-4 rounded-[1.4rem] border border-[#b08d57]/20 bg-[#2b1e17]/90 p-8 shadow-[0_24px_70px_-30px_rgba(0,0,0,0.7)] lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="font-serif text-sm uppercase tracking-[0.28em] text-[#b08d57]">Events</p>
+              <h2 className="mt-4 font-serif text-4xl text-parchment sm:text-5xl">
+                Gatherings in the hearth room and the reading circle.
+              </h2>
+            </div>
+            <div className="grid gap-4 text-sm text-parchment/80 sm:grid-cols-2">
+              {eventItems.map((event) => (
+                <div key={event.title} className="rounded-[1rem] border border-[#b08d57]/15 bg-[#312d26]/90 p-4">
+                  <h3 className="font-serif text-lg text-[#f8efe0]">{event.title}</h3>
+                  <p className="mt-2 leading-7">{event.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      <motion.section
+        className="border-b border-brass/20 bg-[#1f2a2e] px-5 py-20 sm:px-8 lg:px-10"
         id="newsletter"
         initial="hidden"
         whileInView="visible"
@@ -391,10 +459,38 @@ export function LandingPage() {
             <div className="mt-5 flex flex-col gap-3">
               <input className="rounded-md border border-[#5c4033]/20 bg-[#fffdf7] px-4 py-3 outline-none ring-0" placeholder="Name" />
               <input className="rounded-md border border-[#5c4033]/20 bg-[#fffdf7] px-4 py-3 outline-none ring-0" placeholder="Email address" />
-              <button className="inline-flex items-center justify-center gap-2 rounded-md border border-[#b08d57]/40 bg-[#3b1f1f] px-4 py-3 font-serif text-sm uppercase tracking-[0.2em] text-[#f8efe0] transition hover:border-[#d1ae73] hover:brightness-105" type="button">
+              <button className="inline-flex items-center justify-center gap-2 rounded-md border border-[#b08d57]/40 bg-[#3b1e17] px-4 py-3 font-serif text-sm uppercase tracking-[0.2em] text-[#f8efe0] transition hover:border-[#d1ae73] hover:brightness-105" type="button">
                 Subscribe <Send aria-hidden="true" className="size-4" />
               </button>
             </div>
+          </div>
+        </div>
+      </motion.section>
+
+      <motion.section
+        className="border-b border-brass/20 bg-[#f7ebd5] px-5 py-20 sm:px-8 lg:px-10"
+        id="whatsapp"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="room-frame rounded-[1.4rem] bg-[#f6eee0]/95 p-8 sm:p-10">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="font-serif text-sm uppercase tracking-[0.28em] text-[#5c4033]">WhatsApp Community</p>
+                <h2 className="mt-3 font-serif text-4xl text-[#2b1e17] sm:text-5xl">
+                  Conversations that continue after the room closes.
+                </h2>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#1f2a2e]/30 bg-[#1f2a2e] px-4 py-2 text-sm uppercase tracking-[0.18em] text-[#d8c8a3]">
+                <Users aria-hidden="true" className="size-4" />
+                Private group
+              </div>
+            </div>
+            <p className="mt-6 max-w-2xl text-sm leading-7 text-[#3e2a1f]/88">
+              After acceptance, members continue the conversation in a private WhatsApp group where texts, notes, and invitations are shared with the same care as the salon room.
+            </p>
           </div>
         </div>
       </motion.section>
@@ -412,16 +508,44 @@ export function LandingPage() {
             <h2 className="mt-4 font-serif text-4xl text-[#2b1e17] sm:text-5xl">
               Write your request as if in an antique journal.
             </h2>
-            <form className="mt-8 space-y-4">
+            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
               <div className="grid gap-4 sm:grid-cols-2">
-                <input className="rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0" placeholder="Name" />
-                <input className="rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0" placeholder="Email" />
+                <input
+                  className="rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0"
+                  placeholder="Name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                />
+                <input
+                  className="rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
               </div>
-              <input className="w-full rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0" placeholder="What question have you carried longest?" />
-              <textarea className="min-h-32 w-full rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0" placeholder="Tell us what kind of conversation you hope to deepen." />
-              <button className="inline-flex items-center gap-2 rounded-md border border-[#b08d57]/35 bg-[#2b1e17] px-5 py-3 font-serif text-sm uppercase tracking-[0.2em] text-[#f8efe0] transition hover:border-[#d1ae73] hover:brightness-105" type="button">
+              <input
+                className="w-full rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0"
+                placeholder="What question have you carried longest?"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+              />
+              <textarea
+                className="min-h-32 w-full rounded-md border border-[#5c4033]/20 bg-[#fffdf6] px-4 py-3 outline-none ring-0"
+                placeholder="Tell us what kind of conversation you hope to deepen."
+                value={intent}
+                onChange={(event) => setIntent(event.target.value)}
+              />
+              <button
+                className="inline-flex items-center gap-2 rounded-md border border-[#b08d57]/35 bg-[#2b1e17] px-5 py-3 font-serif text-sm uppercase tracking-[0.2em] text-[#f8efe0] transition hover:border-[#d1ae73] hover:brightness-105"
+                type="submit"
+              >
                 Submit application <ArrowRight aria-hidden="true" className="size-4" />
               </button>
+              {submitted && (
+                <div className="rounded-[0.75rem] border border-[#b08d57]/20 bg-[#fff9e7] px-4 py-3 text-sm text-[#3e2a1f]">
+                  Thank you, your response has been noted and will be reviewed by the curator.
+                </div>
+              )}
             </form>
           </div>
           <div className="rounded-[1.4rem] border border-[#5c4033]/20 bg-[#2b1e17]/90 p-8 text-parchment shadow-[0_24px_70px_-34px_rgba(0,0,0,0.7)] sm:p-10">

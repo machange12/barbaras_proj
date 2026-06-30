@@ -4,10 +4,19 @@ const navigationItems = [
   { label: 'History', to: '/history' },
   { label: 'Society', to: '/society' },
   { label: 'Bookshelf', to: '/#bookshelf' },
+  { label: 'Archive', to: '/#archive' },
   { label: 'Essays', to: '/#essays' },
   { label: 'Debates', to: '/#debates' },
   { label: 'Apply', to: '/#apply' },
 ]
+
+function isActiveLink(itemTo: string, pathname: string, hash: string) {
+  if (itemTo.startsWith('/#')) {
+    return pathname === '/' && hash === itemTo.slice(1)
+  }
+
+  return pathname === itemTo
+}
 
 export function SiteHeader() {
   const location = useLocation()
@@ -26,8 +35,8 @@ export function SiteHeader() {
       >
         {navigationItems.map((item) => (
           <Link
-            className={`text-xs uppercase tracking-[0.14em] text-parchment/80 transition duration-300 hover:text-parchment ${
-              location.pathname === item.to ? 'text-parchment' : ''
+            className={`text-xs uppercase tracking-[0.14em] transition duration-300 hover:text-parchment ${
+              isActiveLink(item.to, location.pathname, location.hash) ? 'text-parchment' : 'text-parchment/70'
             }`}
             key={item.label}
             to={item.to}
