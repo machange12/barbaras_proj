@@ -1,8 +1,13 @@
+from typing import Literal
+
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.schemas.health import HealthCheckResponse, ReadinessResponse
+
+Status = Literal["ok", "degraded"]
 
 
 class HealthService:
@@ -17,10 +22,15 @@ class HealthService:
         )
 
     def ready(self, db: Session) -> ReadinessResponse:
-        db.execute(text("SELECT 1"))
+        database_status: Status = "ok"
+        try:
+            db.execute(text("SELECT 1"))
+        except SQLAlchemyError:
+            database_status = "degraded"
+
         return ReadinessResponse(
-            status="ok",
+            status=database_status,
             service=self._settings.app_name,
             environment=self._settings.environment,
-            database="ok",
+            database=database_status,
         )

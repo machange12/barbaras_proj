@@ -1,48 +1,27 @@
-import { motion } from 'framer-motion'
-import { Scale, ScrollText } from 'lucide-react'
-import { SiteHeader } from '../../components/layout/SiteHeader'
-import { salonDistinctions, salonPractices } from '../../content/salonIdentity'
-
-const reveal = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0 },
-}
+import { Scale, ScrollText } from 'lucide-react';
+import { SiteFooter } from '../../components/layout/SiteFooter';
+import { salonDistinctions, salonPractices } from '../../content/salonIdentity';
 
 export function SalonDifferencePage() {
   return (
     <main className="min-h-svh bg-ink">
       <section className="paper-texture border-b border-brass/25 bg-[radial-gradient(circle_at_22%_16%,rgba(176,141,87,0.2),transparent_32%),linear-gradient(180deg,#2b1e17,#3e2a1f)]">
-        <SiteHeader />
-        <motion.div
-          animate="visible"
-          className="mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:px-10"
-          initial="hidden"
-          transition={{ duration: 0.65, ease: 'easeOut', staggerChildren: 0.1 }}
-        >
-          <motion.div variants={reveal}>
-            <p className="font-serif text-sm uppercase tracking-[0.32em] text-brass">
-              Beyond the book club
-            </p>
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:px-10">
+          <div>
+            <p className="font-serif text-sm uppercase tracking-[0.32em] text-brass">Beyond the book club</p>
             <h1 className="mt-6 font-serif text-5xl leading-none text-parchment sm:text-6xl lg:text-7xl">
               The book is the doorway. The room is the work.
             </h1>
-          </motion.div>
-          <motion.div
-            className="border-l border-brass/45 pl-6 text-base leading-8 text-parchment/78 sm:text-lg"
-            variants={reveal}
-          >
+          </div>
+          <div className="border-l border-brass/45 pl-6 text-base leading-8 text-parchment/78 sm:text-lg">
             <p>
-              A normal book club gathers around a text. A salon gathers around
-              the intellectual life the text awakens: judgment, taste,
-              disagreement, memory, and the difficult art of public thought.
+              A normal book club gathers around a text. A salon gathers around the intellectual life the text awakens: judgment, taste, disagreement, memory, and the difficult art of public thought.
             </p>
             <p className="mt-5">
-              This society is slower than a club, less casual than a meetup, and
-              more hospitable than a debate society. It is designed for people
-              who want conversation to become a serious practice.
+              This society is slower than a club, less casual than a meetup, and more hospitable than a debate society. It is designed for people who want conversation to become a serious practice.
             </p>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </section>
 
       <section className="bg-[#241b15] px-5 py-20 sm:px-8 lg:px-10">
@@ -50,12 +29,8 @@ export function SalonDifferencePage() {
           <div className="flex max-w-3xl items-start gap-5">
             <Scale aria-hidden="true" className="mt-1 size-7 text-brass" strokeWidth={1.5} />
             <div>
-              <p className="font-serif text-sm uppercase tracking-[0.28em] text-brass">
-                The distinction
-              </p>
-              <h2 className="mt-4 font-serif text-4xl text-parchment">
-                Same books, different discipline.
-              </h2>
+              <p className="font-serif text-sm uppercase tracking-[0.28em] text-brass">The distinction</p>
+              <h2 className="mt-4 font-serif text-4xl text-parchment">Same books, different discipline.</h2>
             </div>
           </div>
           <div className="mt-10 grid gap-5">
@@ -78,8 +53,7 @@ export function SalonDifferencePage() {
             <ScrollText aria-hidden="true" className="size-8 text-brass" strokeWidth={1.5} />
             <h2 className="mt-6 font-serif text-4xl text-parchment">House practices</h2>
             <p className="mt-5 text-sm leading-7 text-parchment/64">
-              These practices keep the society from becoming either passive
-              consumption or performative cleverness.
+              These practices keep the society from becoming either passive consumption or performative cleverness.
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -95,6 +69,8 @@ export function SalonDifferencePage() {
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </main>
-  )
+  );
 }
