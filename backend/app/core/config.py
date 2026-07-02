@@ -14,19 +14,33 @@ class Settings(BaseSettings):
 
     app_name: str = "The Reading Salon API"
     environment: Literal["local", "test", "staging", "production"] = "local"
+    testing: bool = False
     api_v1_prefix: str = "/api/v1"
     backend_cors_origins: list[str] = Field(default_factory=list)
 
-    database_url: str = "sqlite:///./local.db"
+    database_url: str = "postgresql+psycopg://salon:salon@localhost:5432/salon"
+    database_pool_size: int = 10
+    database_max_overflow: int = 10
+    database_pool_recycle: int = 1800
+    database_echo: bool = False
 
     jwt_secret_key: str = ""  # noqa: S105 - configured via env
     jwt_algorithm: str = "HS256"
     jwt_issuer: str = "the-reading-salon"
     jwt_audience: str = "the-reading-salon-clients"
     access_token_expire_minutes: int = 60
+    refresh_token_expire_minutes: int = 60 * 24 * 30
 
     bcrypt_max_bytes: int = 72
-    request_timeout_seconds: float = 10.0
+    bcrypt_rounds: int = 12
+
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    smtp_from_address: str = "salon@example.test"
+    smtp_from_name: str = "The Reading Salon"
+
+    initial_curator_email: str = ""
+    initial_curator_password: str = ""
 
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
@@ -50,6 +64,10 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @property
+    def is_testing(self) -> bool:
+        return self.testing or self.environment == "test"
 
 
 @lru_cache

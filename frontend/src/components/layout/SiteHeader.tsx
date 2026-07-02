@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '../../features/auth/AuthContext';
 
 type NavItem = { label: string; to: string };
 
@@ -32,6 +33,7 @@ function isActive(itemTo: string, pathname: string, hash: string) {
 
 export function SiteHeader() {
   const location = useLocation();
+  const { user, logout, status } = useAuth();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -69,16 +71,31 @@ export function SiteHeader() {
         })}
       </nav>
 
-      <button
-        aria-controls="mobile-nav"
-        aria-expanded={open}
-        aria-label={open ? 'Close menu' : 'Open menu'}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-brass/30 bg-[#2d1c13]/80 text-parchment md:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass"
-        onClick={() => setOpen((prev) => !prev)}
-        type="button"
-      >
-        {open ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
-      </button>
+      <div className="flex items-center gap-3">
+        {status === 'authenticated' && user ? (
+          <div className="hidden items-center gap-3 rounded-full border border-brass/30 bg-[#2d1c13]/70 px-3 py-2 text-sm text-parchment/80 md:flex">
+            <span>{user.name}</span>
+            {user.role === 'curator' ? <span className="text-brass">Curator</span> : null}
+            <button className="text-xs uppercase tracking-[0.14em] text-brass" onClick={() => void logout()} type="button">
+              Logout
+            </button>
+          </div>
+        ) : (
+          <Link className="hidden rounded-full border border-brass/30 px-3 py-2 text-sm uppercase tracking-[0.14em] text-parchment/80 hover:text-parchment md:inline-flex" to="/login">
+            Login
+          </Link>
+        )}
+        <button
+          aria-controls="mobile-nav"
+          aria-expanded={open}
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-brass/30 bg-[#2d1c13]/80 text-parchment md:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass"
+          onClick={() => setOpen((prev) => !prev)}
+          type="button"
+        >
+          {open ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
+        </button>
+      </div>
 
       {open && (
         <nav
@@ -103,6 +120,19 @@ export function SiteHeader() {
                 </li>
               );
             })}
+            {status === 'authenticated' && user ? (
+              <li>
+                <button className="block w-full rounded-md px-3 py-3 text-left text-sm uppercase tracking-[0.14em] text-parchment/80 hover:bg-brass/10" onClick={() => void logout()} type="button">
+                  Logout
+                </button>
+              </li>
+            ) : (
+              <li>
+                <Link className="block rounded-md px-3 py-3 text-sm uppercase tracking-[0.14em] text-parchment/80 hover:bg-brass/10" to="/login">
+                  Login
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
       )}

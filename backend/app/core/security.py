@@ -1,10 +1,10 @@
-from datetime import UTC, datetime, timedelta
-from typing import Any, Final
+from __future__ import annotations
+
+from typing import Final
 
 import bcrypt
-import jwt
 
-from app.core.config import Settings, get_settings
+from app.core.config import Settings
 
 _BCRYPT_MAX_BYTES: Final[int] = 72
 
@@ -23,51 +23,30 @@ def validate_password_strength(password: str) -> None:
 
 def hash_password(plain_password: str, settings: Settings | None = None) -> str:
     validate_password_strength(plain_password)
-    return bcrypt.hashpw(_truncate_for_bcrypt(plain_password), bcrypt.gensalt()).decode("utf-8")
+    rounds = settings.bcrypt_rounds if settings is not None else 12
+    salt = bcrypt.gensalt(rounds=rounds)
+    return bcrypt.hashpw(_truncate_for_bcrypt(plain_password), salt).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return bcrypt.checkpw(_truncate_for_bcrypt(plain_password), hashed_password.encode("utf-8"))
+        return bcrypt.checkpw(
+            _truncate_for_bcrypt(plain_password),
+            hashed_password.encode("utf-8"),
+        )
     except ValueError:
         return False
 
 
-def create_access_token(
-    subject: str,
-    *,
-    settings: Settings | None = None,
-    expires_delta: timedelta | None = None,
-    extra_claims: dict[str, Any] | None = None,
-) -> str:
-    cfg = settings or get_settings()
-    issued_at = datetime.now(UTC)
-    expires_at = issued_at + (
-        expires_delta or timedelta(minutes=cfg.access_token_expire_minutes)
-    )
-    payload: dict[str, Any] = {
-        "sub": subject,
-        "iat": issued_at,
-        "exp": expires_at,
-        "iss": cfg.jwt_issuer,
-        "aud": cfg.jwt_audience,
-        "jti": f"{subject}-{int(issued_at.timestamp())}",
-    }
-    if extra_claims:
-        payload.update(extra_claims)
-    return jwt.encode(payload, cfg.jwt_secret_key, algorithm=cfg.jwt_algorithm)
-
-
-def decode_access_token(token: str, *, settings: Settings | None = None) -> dict[str, Any]:
-    cfg = settings or get_settings()
-    return jwt.decode(
-        token,
-        cfg.jwt_secret_key,
-        algorithms=[cfg.jwt_algorithm],
-        audience=cfg.jwt_audience,
-        issuer=cfg.jwt_issuer,
-    )
-
-
 def normalize_email(value: str) -> str:
     return value.strip().lower()
+
+
+# Re-exported for backward compatibility with Phase 1 imports/tests.
+from app.core.jwt_tokens import (  # noqa: E402,F401  (re-exports)
+    TokenError,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    token_type,
+)

@@ -1,7 +1,6 @@
 import type { FormEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useApplicationForm } from '../../features/application/useApplicationForm';
-import { API_BASE_URL } from '../../lib/api';
 
 const MEMBERSHIP_EXPECTATIONS = [
   'Bring a prepared question and a willingness to be corrected.',
@@ -31,7 +30,7 @@ export function ApplicationSection() {
   } = useApplicationForm();
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
-    return submit(event, `${API_BASE_URL}/api/v1/applications`);
+    return submit(event);
   }
 
   return (

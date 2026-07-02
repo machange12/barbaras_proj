@@ -14,19 +14,19 @@ def _build_engine() -> Engine:
     settings = get_settings()
     url = settings.database_url
 
+    connect_args: dict = {}
     if url.startswith("sqlite"):
-        return create_engine(
-            url,
-            connect_args={"check_same_thread": False},
-            pool_pre_ping=True,
-        )
+        connect_args["check_same_thread"] = False
 
     return create_engine(
         url,
+        connect_args=connect_args or None,
         pool_pre_ping=True,
-        pool_size=5,
-        max_overflow=10,
-        pool_recycle=1800,
+        pool_size=settings.database_pool_size,
+        max_overflow=settings.database_max_overflow,
+        pool_recycle=settings.database_pool_recycle,
+        echo=settings.database_echo,
+        future=True,
     )
 
 
@@ -55,3 +55,12 @@ def get_db() -> Generator[Session]:
         yield db
     finally:
         db.close()
+
+
+def reset_engine_cache() -> None:
+    """Used by tests to force a rebuild when the URL changes between cases."""
+    global _engine, _SessionLocal
+    if _engine is not None:
+        _engine.dispose()
+    _engine = None
+    _SessionLocal = None

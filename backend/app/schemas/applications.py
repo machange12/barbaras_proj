@@ -1,11 +1,12 @@
 import re
+from datetime import datetime
 from html import escape
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 _NAME_PATTERN = re.compile(r"^[\w\s\-.,'’]{1,80}$", re.UNICODE)
 
-_MAX_QUESTION_LENGTH = 240
+_MAX_QUESTION_LENGTH = 500
 _MAX_INTENT_LENGTH = 2000
 
 
@@ -25,14 +26,23 @@ class ApplicationCreate(BaseModel):
         return value
 
 
+class ApplicationSummary(BaseModel):
+    """Lightweight projection used in lists; full payload is in `data`."""
+    id: str
+    status: str
+    received_at: datetime
+    name: str
+    email: str
+
+
 class ApplicationResponse(BaseModel):
     status: str
     message: str
-    received_at: str
+    received_at: datetime
     data: dict[str, str]
 
     @classmethod
-    def build(cls, *, payload: ApplicationCreate, received_at: str) -> "ApplicationResponse":
+    def build(cls, *, payload: ApplicationCreate, received_at: datetime) -> "ApplicationResponse":
         safe = {
             "name": escape(payload.name.strip()),
             "email": payload.email.lower(),

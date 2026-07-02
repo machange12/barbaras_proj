@@ -1,14 +1,62 @@
+from collections.abc import Sequence
 from datetime import UTC, datetime
+from html import escape
 
+from sqlalchemy.orm import Session
+
+from app.core.security import normalize_email
+from app.database.repositories.application_repository import ApplicationRepository
+from app.models import Application, ApplicationStatus
 from app.schemas.applications import ApplicationCreate, ApplicationResponse
 
 
 class ApplicationService:
-    """Receives application submissions and returns a sanitized acknowledgement.
+    """Persists application submissions and exposes curator lookup helpers."""
 
-    Persistence is intentionally not wired yet; swap in a repository when ready.
-    """
+    def __init__(self, session: Session) -> None:
+        self._session = session
+        self._repo = ApplicationRepository(session)
 
     def submit(self, payload: ApplicationCreate) -> ApplicationResponse:
-        received_at = datetime.now(UTC).isoformat(timespec="seconds")
-        return ApplicationResponse.build(payload=payload, received_at=received_at)
+        application = Application(
+            name=escape(payload.name.strip()),
+            email=normalize_email(payload.email),
+            question=escape(payload.question.strip()),
+            intent=escape(payload.intent.strip()),
+            status=ApplicationStatus.received,
+        )
+        self._repo.add(application)
+        self._session.commit()
+        return ApplicationResponse(
+            status=application.status.value,
+            message="Application stored",
+            received_at=application.created_at or datetime.now(UTC),
+            data={
+                "name": application.name,
+                "email": application.email,
+                "question": application.question,
+                "intent": application.intent,
+            },
+        )
+
+    def list_paginated(
+        self,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+        status: ApplicationStatus | None = None,
+    ) -> Sequence[Application]:
+        return self._repo.list_recent(
+            status=status,
+            limit=min(max(limit, 1), 100),
+            offset=max(offset, 0),
+        )
+
+    def get_by_id(self, application_id):
+        return self._repo.get(application_id)
+
+    def set_status(self, application_id, status: ApplicationStatus) -> Application | None:
+        updated = self._repo.set_status(application_id, status)
+        if updated is not None:
+            self._session.commit()
+        return updated

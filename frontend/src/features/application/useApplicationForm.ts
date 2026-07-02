@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { ApiError } from '../../lib/api/client';
+import { submissionsApi } from '../../lib/api/applications';
 
 export type ApplicationErrors = Partial<Record<'name' | 'email' | 'question' | 'intent', string>>;
 
@@ -56,11 +58,7 @@ export function useApplicationForm() {
     onIntent: (event) => setField('intent', event.target.value),
   };
 
-  async function submit(
-    event: FormEvent<HTMLFormElement>,
-    endpoint: string,
-    fetcher: typeof fetch = fetch,
-  ) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(false);
     setServerError('');
@@ -73,32 +71,18 @@ export function useApplicationForm() {
     setErrors({});
     setIsSubmitting(true);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
-
     try {
-      const response = await fetcher(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-        signal: controller.signal,
+      await submissionsApi.submit({
+        name: values.name,
+        email: values.email,
+        question: values.question,
+        intent: values.intent,
       });
-
-      if (!response.ok) {
-        const detail = await response.text().catch(() => '');
-        throw new Error(detail || `Request failed with status ${response.status}`);
-      }
-
       setSubmitted(true);
       setValues(emptyApplication());
     } catch (error) {
-      const message =
-        error instanceof DOMException && error.name === 'AbortError'
-          ? 'The submission took too long. Please try again.'
-          : 'The message could not be delivered. Please try again in a moment.';
-      setServerError(message);
+      setServerError(messageFromError(error));
     } finally {
-      clearTimeout(timeout);
       setIsSubmitting(false);
     }
   }
@@ -112,4 +96,16 @@ export function useApplicationForm() {
     ...updater,
     submit,
   };
+}
+
+function messageFromError(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 422 && error.fieldErrors) {
+      const first = Object.values(error.fieldErrors)[0];
+      if (first) return first;
+    }
+    return error.message || 'The submission was rejected. Please review your details.';
+  }
+  if (error instanceof Error) return error.message;
+  return 'The submission could not be completed. Please try again in a moment.';
 }

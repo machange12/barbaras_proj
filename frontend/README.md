@@ -1,32 +1,43 @@
-# React + TypeScript + Vite
+# The Reading Salon — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Vite + React 19 + React Router 7 + framer-motion + Tailwind 4, with TanStack Query for the API layer.
 
-Currently, two official plugins are available:
+## Prereqs
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20+
+- Backend running (see `../backend/README.md`). The dev proxy in `vite.config.ts` forwards `/api` to `http://127.0.0.1:8000` by default (override via `VITE_API_PROXY_TARGET`).
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm install
+cp .env.local .env.local.bak 2>/dev/null || true
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+`.env.local` ships already populated with `VITE_API_BASE_URL=/api`. Drop it if you want the dev proxy to handle the network hop.
+
+## Scripts
+
+```sh
+npm run dev      # Vite dev server on http://127.0.0.1:5173
+npm run build    # TypeScript build + production bundle
+npm run lint     # Oxlint
+npm run preview  # Preview the production bundle
+```
+
+## API layer
+
+- `src/lib/api/client.ts` — typed `fetch` wrapper with `ApiError`, AbortController timeout.
+- `src/lib/api/config.ts` — `API_BASE_URL`, `apiUrl()` helper.
+- `src/lib/api/applications.ts` — client API surface for the application form (submit, list, get).
+- `src/lib/api/queryClient.ts` — TanStack Query client factory.
+- `src/App.tsx` — wraps the app in `QueryClientProvider` and renders the React Query devtools in dev.
+
+## Notable sections
+
+| File | Purpose |
+| --- | --- |
+| `src/sections/landing/` | Composable sections of the landing page (hero, bookshelf, archive, debates, essays, events, application form) |
+| `src/components/layout/SiteHeader.tsx` | Primary navigation, including mobile drawer |
+| `src/pages/history/HistoryPage.tsx`, `src/pages/society/SalonDifferencePage.tsx` | Static curated pages |
+| `src/features/application/useApplicationForm.ts` | Submission form hook: validation, abort, server-error mapping |
