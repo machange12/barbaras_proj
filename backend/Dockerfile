@@ -14,10 +14,14 @@ RUN apt-get update \
 COPY pyproject.toml ./
 COPY app ./app
 COPY alembic ./alembic
+COPY alembic.ini ./
 
 RUN pip install --upgrade pip \
     && pip install .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run migrations then start the server.
+# Render and most hosts support a preDeployCommand; this entrypoint
+# handles it inline for hosts that do not.
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000

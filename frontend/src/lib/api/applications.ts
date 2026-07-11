@@ -23,20 +23,41 @@ export type ApplicationSummary = {
   email: string;
 };
 
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('access_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export const submissionsApi = {
   submit: (payload: ApplicationPayload) =>
     apiRequest<ApplicationResponse>(apiUrl('/applications'), {
       method: 'POST',
       body: payload,
     }),
-  list: () =>
-    apiRequest<ApplicationSummary[]>(apiUrl('/applications'), { method: 'GET' }),
+  list: (status?: string) => {
+    const url = status
+      ? `${apiUrl('/applications')}?status=${encodeURIComponent(status)}`
+      : apiUrl('/applications');
+    return fetch(url, {
+      headers: { ...authHeaders() },
+      credentials: 'include',
+    }).then(async (res) => {
+      if (!res.ok) throw new Error('Failed to fetch applications');
+      return res.json() as Promise<ApplicationSummary[]>;
+    });
+  },
   get: (id: string) =>
-    apiRequest<ApplicationResponse>(apiUrl(`/applications/${id}`), { method: 'GET' }),
+    fetch(apiUrl(`/applications/${id}`), {
+      headers: { ...authHeaders() },
+      credentials: 'include',
+    }).then(async (res) => {
+      if (!res.ok) throw new Error('Application not found');
+      return res.json() as Promise<ApplicationResponse>;
+    }),
 };
 
 export const applicationKeys = {
   all: ['applications'] as const,
-  list: () => [...applicationKeys.all, 'list'] as const,
+  list: (status?: string) => [...applicationKeys.all, 'list', status] as const,
   detail: (id: string) => [...applicationKeys.all, 'detail', id] as const,
 };
