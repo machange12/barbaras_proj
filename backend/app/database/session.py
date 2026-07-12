@@ -20,7 +20,7 @@ def _build_engine() -> Engine:
 
     return create_engine(
         url,
-        connect_args=connect_args or None,
+        connect_args=connect_args,
         pool_pre_ping=True,
         pool_size=settings.database_pool_size,
         max_overflow=settings.database_max_overflow,
