@@ -11,10 +11,10 @@ from app.core.jwt_tokens import (
     decode_token,
     token_type,
 )
+from app.core.security import normalize_email, verify_password
 from app.database.repositories.refresh_token_repository import RefreshTokenRepository
 from app.database.repositories.user_repository import UserRepository
 from app.models import User
-from app.core.security import normalize_email, verify_password
 
 
 class AuthService:
@@ -31,7 +31,12 @@ class AuthService:
             return None
         return user
 
-    def issue_tokens(self, user: User, *, user_agent: str | None = None) -> tuple[User, str, object, str]:
+    def issue_tokens(
+        self,
+        user: User,
+        *,
+        user_agent: str | None = None,
+    ) -> tuple[User, str, object, str]:
         access_token, access_expires_at = create_access_token(
             str(user.id),
             extra_claims={"role": user.role.value},
@@ -46,7 +51,12 @@ class AuthService:
         self._session.commit()
         return user, access_token, access_expires_at, refresh_token
 
-    def refresh(self, refresh_token_value: str, *, user_agent: str | None = None) -> tuple[User, str, object, str]:
+    def refresh(
+        self,
+        refresh_token_value: str,
+        *,
+        user_agent: str | None = None,
+    ) -> tuple[User, str, object, str]:
         if not refresh_token_value:
             raise ValueError("Refresh token required")
         try:

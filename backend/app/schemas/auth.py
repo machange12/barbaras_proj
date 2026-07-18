@@ -35,7 +35,7 @@ class CurrentUserResponse(BaseModel):
 class TokenPair(BaseModel):
     access_token: str
     access_expires_at: datetime
-    token_type: Literal["Bearer"] = "Bearer"
+    token_type: Literal["Bearer"] = "Bearer"  # noqa: S105
 
 
 class LoginResponse(BaseModel):

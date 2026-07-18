@@ -36,6 +36,13 @@ def test_list_requires_curator(client, db_session):  # noqa: ARG001
 def test_list_returns_submissions_when_curator(client, seeded_curator, db_session):  # noqa: ARG001
     service = ApplicationService(db_session)
     from app.schemas.applications import ApplicationCreate
+
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={"email": seeded_curator.email, "password": "Sup3r-Secret!"},
+    )
+    access_token = login_response.json()["tokens"]["access_token"]
+
     for i in range(2):
         service.submit(
             ApplicationCreate(
@@ -46,7 +53,10 @@ def test_list_returns_submissions_when_curator(client, seeded_curator, db_sessio
             )
         )
 
-    response = client.get("/api/v1/applications")
+    response = client.get(
+        "/api/v1/applications",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
     assert response.status_code == 200
     body = response.json()
     assert len(body) == 2

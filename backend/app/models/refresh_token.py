@@ -1,7 +1,6 @@
 # ruff: noqa: F821 - SQLAlchemy resolves forward references at mapper config.
 from __future__ import annotations
 
-import uuid
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -30,7 +29,7 @@ class RefreshToken(TimestampMixin, Base):
     )
     user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    user: Mapped["User"] = relationship(  # noqa: F821
+    user: Mapped[User] = relationship(  # noqa: F821
         back_populates="refresh_tokens",
     )
 

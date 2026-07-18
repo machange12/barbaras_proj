@@ -7,7 +7,7 @@ def test_login_and_me_endpoints_work_with_bearer_token(client, db_session):
     service.create_user(
         email="curator@example.org",
         name="Curator",
-        password="Sup3r-Secret!",
+        password="Sup3r-Secret!",  # noqa: S106 - test credential only
         role=UserRole.curator,
     )
 
@@ -36,7 +36,7 @@ def test_curator_route_requires_curator_role(client, db_session):
     service.create_user(
         email="member@example.org",
         name="Member",
-        password="Sup3r-Secret!",
+        password="Sup3r-Secret!",  # noqa: S106 - test credential only
         role=UserRole.member,
     )
 
@@ -59,7 +59,7 @@ def test_refresh_endpoint_issues_new_access_token(client, db_session):
     service.create_user(
         email="curator@example.org",
         name="Curator",
-        password="Sup3r-Secret!",
+        password="Sup3r-Secret!",  # noqa: S106 - test credential only
         role=UserRole.curator,
     )
 
