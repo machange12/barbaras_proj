@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
@@ -32,8 +33,8 @@ def upgrade() -> None:
         END $$;
     """)
 
-    user_role = sa.Enum("member", "curator", name="user_role", create_type=False)
-    application_status = sa.Enum(
+    user_role = postgresql.ENUM("member", "curator", name="user_role", create_type=False)
+    application_status = postgresql.ENUM(
         "received",
         "reviewed",
         "accepted",
@@ -132,5 +133,5 @@ def downgrade() -> None:
     op.drop_index("ix_users_email", table_name="users")
     op.drop_table("users")
 
-    sa.Enum(name="application_status").drop(op.get_bind(), checkfirst=True)
-    sa.Enum(name="user_role").drop(op.get_bind(), checkfirst=True)
+    postgresql.ENUM(name="application_status", create_type=False).drop(op.get_bind(), checkfirst=True)
+    postgresql.ENUM(name="user_role", create_type=False).drop(op.get_bind(), checkfirst=True)
