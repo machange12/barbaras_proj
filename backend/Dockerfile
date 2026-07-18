@@ -26,11 +26,14 @@ EXPOSE 8000
 # handles it inline for hosts that do not.
 CMD python -c "\
 import psycopg, os; \
-conn = psycopg.connect(os.environ['DATABASE_URL'].replace('postgresql+psycopg://', 'postgresql://')); \
+url = os.environ['DATABASE_URL']; \
+url = url.replace('postgresql+psycopg://', 'postgresql://').replace('postgres://', 'postgresql://'); \
+conn = psycopg.connect(url); \
 conn.autocommit = True; \
 cur = conn.cursor(); \
-cur.execute(\"DROP TYPE IF EXISTS user_role CASCADE\"); \
-cur.execute(\"DROP TYPE IF EXISTS application_status CASCADE\"); \
-conn.close()" \
+cur.execute('DROP TYPE IF EXISTS user_role CASCADE'); \
+cur.execute('DROP TYPE IF EXISTS application_status CASCADE'); \
+conn.close(); \
+print('Dropped orphaned types')" \
 && alembic upgrade head \
 && uvicorn app.main:app --host 0.0.0.0 --port 8000
