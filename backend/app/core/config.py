@@ -5,6 +5,14 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _normalize_database_url(value: str) -> str:
+    if value.startswith("postgres://"):
+        return value.replace("postgres://", "postgresql+psycopg://", 1)
+    if value.startswith("postgresql://") and "+psycopg" not in value:
+        return value.replace("postgresql://", "postgresql+psycopg://", 1)
+    return value
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -41,6 +49,13 @@ class Settings(BaseSettings):
 
     initial_curator_email: str = ""
     initial_curator_password: str = ""
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def _normalize_database_url(cls, value: object) -> object:
+        if isinstance(value, str):
+            return _normalize_database_url(value)
+        return value
 
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
