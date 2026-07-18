@@ -19,12 +19,28 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    user_role = sa.Enum("member", "curator", name="user_role")
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE user_role AS ENUM ('member', 'curator');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE application_status AS ENUM ('received', 'reviewed', 'accepted', 'declined');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
+
+    user_role = sa.Enum("member", "curator", name="user_role", create_type=False)
     application_status = sa.Enum(
-        "received", "reviewed", "accepted", "declined", name="application_status"
+        "received",
+        "reviewed",
+        "accepted",
+        "declined",
+        name="application_status",
+        create_type=False,
     )
-    user_role.create(op.get_bind(), checkfirst=True)
-    application_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "users",
