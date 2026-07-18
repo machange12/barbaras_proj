@@ -19,11 +19,18 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.execute("CREATE TYPE IF NOT EXISTS user_role AS ENUM ('member', 'curator')")
-    op.execute(
-        "CREATE TYPE IF NOT EXISTS application_status "
-        "AS ENUM ('received', 'reviewed', 'accepted', 'declined')"
-    )
+    op.execute("""
+    DO $$ BEGIN
+        CREATE TYPE user_role AS ENUM ('member', 'curator');
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+""")
+    op.execute("""
+    DO $$ BEGIN
+        CREATE TYPE application_status AS ENUM ('received', 'reviewed', 'accepted', 'declined');
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+""")
 
     user_role = sa.Enum("member", "curator", name="user_role", create_type=False)
     application_status = sa.Enum(
