@@ -24,4 +24,13 @@ EXPOSE 8000
 # Run migrations then start the server.
 # Render and most hosts support a preDeployCommand; this entrypoint
 # handles it inline for hosts that do not.
-CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000
+CMD python -c "\
+import psycopg, os; \
+conn = psycopg.connect(os.environ['DATABASE_URL'].replace('postgresql+psycopg://', 'postgresql://')); \
+conn.autocommit = True; \
+cur = conn.cursor(); \
+cur.execute(\"DROP TYPE IF EXISTS user_role CASCADE\"); \
+cur.execute(\"DROP TYPE IF EXISTS application_status CASCADE\"); \
+conn.close()" \
+&& alembic upgrade head \
+&& uvicorn app.main:app --host 0.0.0.0 --port 8000
