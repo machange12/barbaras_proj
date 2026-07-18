@@ -19,9 +19,14 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    user_role = sa.Enum("member", "curator", name="user_role")
+    user_role = sa.Enum("member", "curator", name="user_role", create_type=False)
     application_status = sa.Enum(
-        "received", "reviewed", "accepted", "declined", name="application_status"
+        "received",
+        "reviewed",
+        "accepted",
+        "declined",
+        name="application_status",
+        create_type=False,
     )
     user_role.create(op.get_bind(), checkfirst=True)
     application_status.create(op.get_bind(), checkfirst=True)
