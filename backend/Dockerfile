@@ -29,17 +29,10 @@ url = url.replace('postgresql+psycopg://', 'postgresql://').replace('postgres://
 conn = psycopg.connect(url); \
 conn.autocommit = True; \
 cur = conn.cursor(); \
-cur.execute(\"\"\" \
-    DO $$ BEGIN \
-        IF NOT EXISTS ( \
-            SELECT 1 FROM information_schema.columns \
-            WHERE table_name = 'users' AND column_name = 'role' \
-        ) THEN \
-            DROP TYPE IF EXISTS user_role; \
-            DROP TYPE IF EXISTS application_status; \
-        END IF; \
-    END $$; \
-\"\"\"); \
+cur.execute(\"SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'role'\"); \
+has_role = cur.fetchone() is not None; \
+cur.execute('DROP TYPE IF EXISTS user_role') if not has_role else None; \
+cur.execute('DROP TYPE IF EXISTS application_status') if not has_role else None; \
 conn.close(); \
 print('Checked orphaned types')" \
     && alembic upgrade head \
