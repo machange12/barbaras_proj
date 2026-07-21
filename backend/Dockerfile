@@ -21,19 +21,6 @@ RUN pip install --upgrade pip \
 
 EXPOSE 8000
 
-# Run migrations then start the server.
-# Render and most hosts support a preDeployCommand; this entrypoint
-# handles it inline for hosts that do not.
-CMD python -c "\
-import psycopg, os; \
-url = os.environ['DATABASE_URL']; \
-url = url.replace('postgresql+psycopg://', 'postgresql://').replace('postgres://', 'postgresql://'); \
-conn = psycopg.connect(url); \
-conn.autocommit = True; \
-cur = conn.cursor(); \
-cur.execute('DROP TYPE IF EXISTS user_role CASCADE'); \
-cur.execute('DROP TYPE IF EXISTS application_status CASCADE'); \
-conn.close(); \
-print('Dropped orphaned types')" \
-&& alembic upgrade head \
-&& uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Run migrations before starting the server.
+CMD alembic upgrade head \
+    && uvicorn app.main:app --host 0.0.0.0 --port 8000
