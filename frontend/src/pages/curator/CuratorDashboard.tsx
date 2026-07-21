@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
+import { approvePendingUser, listPendingUsers } from '../../lib/api/auth';
 import { submissionsApi, applicationKeys, type ApplicationSummary } from '../../lib/api/applications';
 import { ApplicationDetail } from './ApplicationDetail';
 
@@ -21,6 +23,8 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function CuratorDashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -28,6 +32,21 @@ export function CuratorDashboard() {
     queryKey: applicationKeys.list(statusFilter || undefined),
     queryFn: () => submissionsApi.list(statusFilter || undefined),
   });
+  const { data: pendingUsers, isLoading: isLoadingPendingUsers, isError: isPendingUsersError } = useQuery({
+    queryKey: ['auth', 'pending-users'],
+    queryFn: listPendingUsers,
+  });
+  const approveUser = useMutation({
+    mutationFn: approvePendingUser,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['auth', 'pending-users'] });
+    },
+  });
+
+  async function handleLogout() {
+    await logout();
+    navigate('/login', { replace: true });
+  }
 
   if (selectedId) {
     return (
@@ -53,12 +72,53 @@ export function CuratorDashboard() {
           </p>
         </div>
         <button
-          onClick={() => void logout()}
+          onClick={() => void handleLogout()}
           className="rounded-xl border border-brass/30 px-4 py-2 text-sm text-parchment/70 transition hover:border-brass/70 hover:text-parchment"
         >
           Sign out
         </button>
       </div>
+
+      <section className="mb-10 rounded-2xl border border-brass/20 bg-[#1a0f0a]/60 p-5">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-xl uppercase tracking-[0.18em] text-parchment">User approvals</h2>
+            <p className="mt-1 text-sm text-parchment/50">Approve requested member accounts after review.</p>
+          </div>
+          <span className="rounded-full border border-brass/20 px-3 py-1 text-xs text-parchment/60">
+            {pendingUsers?.length ?? 0} pending
+          </span>
+        </div>
+        {isLoadingPendingUsers ? (
+          <p className="py-6 text-sm text-parchment/40">Loading user requests...</p>
+        ) : isPendingUsersError ? (
+          <p className="py-6 text-sm text-[#ffb59e]">Unable to load pending users.</p>
+        ) : pendingUsers?.length ? (
+          <div className="grid gap-3">
+            {pendingUsers.map((pendingUser) => (
+              <div
+                className="flex flex-col justify-between gap-3 rounded-xl border border-brass/10 bg-[#2d1c13]/70 p-4 sm:flex-row sm:items-center"
+                key={pendingUser.id}
+              >
+                <div>
+                  <p className="font-medium text-parchment">{pendingUser.name}</p>
+                  <p className="text-sm text-parchment/60">{pendingUser.email}</p>
+                </div>
+                <button
+                  className="rounded-lg border border-brass/30 px-3 py-2 text-sm text-brass transition hover:border-brass hover:bg-brass/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={approveUser.isPending}
+                  onClick={() => approveUser.mutate(pendingUser.id)}
+                  type="button"
+                >
+                  Approve
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="py-6 text-sm text-parchment/40">No user requests waiting for approval.</p>
+        )}
+      </section>
 
       <div className="mb-6 flex flex-wrap gap-2">
         {STATUS_OPTIONS.map((status) => (

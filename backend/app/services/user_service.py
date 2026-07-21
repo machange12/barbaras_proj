@@ -20,6 +20,7 @@ class UserService:
         password: str,
         role: UserRole = UserRole.member,
         bio: str | None = None,
+        is_active: bool = True,
     ) -> User:
         normalized = normalize_email(email)
         if self._users.get_by_email(normalized):
@@ -30,6 +31,7 @@ class UserService:
             password_hash=hash_password(password),
             role=role,
             bio=bio,
+            is_active=is_active,
         )
         self._users.add(user)
         self._session.commit()
@@ -45,3 +47,15 @@ class UserService:
 
     def get(self, user_id: UUID) -> User | None:
         return self._users.get(user_id)
+
+    def list_pending_members(self) -> list[User]:
+        return self._users.list_pending_members()
+
+    def approve_member(self, user_id: UUID) -> User | None:
+        user = self._users.get(user_id)
+        if user is None or user.role is not UserRole.member:
+            return None
+        user.is_active = True
+        self._session.commit()
+        self._session.refresh(user)
+        return user

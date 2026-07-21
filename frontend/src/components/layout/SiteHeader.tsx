@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '../../features/auth/AuthContext';
 
@@ -33,12 +33,18 @@ function isActive(itemTo: string, pathname: string, hash: string) {
 
 export function SiteHeader() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout, status } = useAuth();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setOpen(false);
   }, [location.pathname, location.hash]);
+
+  async function handleLogout() {
+    await logout();
+    navigate('/login', { replace: true });
+  }
 
   return (
     <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-5 py-5 sm:px-8 lg:px-10">
@@ -76,7 +82,7 @@ export function SiteHeader() {
           <div className="hidden items-center gap-3 rounded-full border border-brass/30 bg-[#2d1c13]/70 px-3 py-2 text-sm text-parchment/80 md:flex">
             <span>{user.name}</span>
             {user.role === 'curator' ? <span className="text-brass">Curator</span> : null}
-            <button className="text-xs uppercase tracking-[0.14em] text-brass" onClick={() => void logout()} type="button">
+            <button className="text-xs uppercase tracking-[0.14em] text-brass" onClick={() => void handleLogout()} type="button">
               Logout
             </button>
           </div>
@@ -122,7 +128,7 @@ export function SiteHeader() {
             })}
             {status === 'authenticated' && user ? (
               <li>
-                <button className="block w-full rounded-md px-3 py-3 text-left text-sm uppercase tracking-[0.14em] text-parchment/80 hover:bg-brass/10" onClick={() => void logout()} type="button">
+                <button className="block w-full rounded-md px-3 py-3 text-left text-sm uppercase tracking-[0.14em] text-parchment/80 hover:bg-brass/10" onClick={() => void handleLogout()} type="button">
                   Logout
                 </button>
               </li>

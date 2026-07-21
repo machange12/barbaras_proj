@@ -53,10 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await logoutRequest();
-    localStorage.removeItem('access_token');
-    setUser(null);
-    setStatus('unauthenticated');
+    try {
+      await logoutRequest();
+    } finally {
+      localStorage.removeItem('access_token');
+      setUser(null);
+      setStatus('unauthenticated');
+    }
   }, []);
 
   const refresh = useCallback(async () => {

@@ -79,3 +79,60 @@ def test_refresh_endpoint_issues_new_access_token(client, db_session):
     body = refresh_response.json()
     assert body["tokens"]["access_token"]
     assert body["user"]["email"] == "curator@example.org"
+
+
+def test_member_registration_requires_curator_approval_before_login(client, db_session):
+    service = UserService(db_session)
+    service.create_user(
+        email="curator@example.org",
+        name="Curator",
+        password="Sup3r-Secret!",  # noqa: S106 - test credential only
+        role=UserRole.curator,
+    )
+
+    register_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "reader@example.org",
+            "name": "Reader",
+            "password": "Sup3r-Secret!",
+        },
+    )
+
+    assert register_response.status_code == 201
+    pending_user = register_response.json()
+    assert pending_user["email"] == "reader@example.org"
+    assert pending_user["role"] == "member"
+    assert pending_user["is_active"] is False
+
+    blocked_login = client.post(
+        "/api/v1/auth/login",
+        json={"email": "reader@example.org", "password": "Sup3r-Secret!"},
+    )
+    assert blocked_login.status_code == 401
+
+    curator_login = client.post(
+        "/api/v1/auth/login",
+        json={"email": "curator@example.org", "password": "Sup3r-Secret!"},
+    )
+    access_token = curator_login.json()["tokens"]["access_token"]
+
+    pending_response = client.get(
+        "/api/v1/auth/pending-users",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert pending_response.status_code == 200
+    assert [user["email"] for user in pending_response.json()] == ["reader@example.org"]
+
+    approve_response = client.post(
+        f"/api/v1/auth/pending-users/{pending_user['id']}/approve",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert approve_response.status_code == 200
+    assert approve_response.json()["is_active"] is True
+
+    approved_login = client.post(
+        "/api/v1/auth/login",
+        json={"email": "reader@example.org", "password": "Sup3r-Secret!"},
+    )
+    assert approved_login.status_code == 200

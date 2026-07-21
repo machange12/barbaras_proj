@@ -13,6 +13,14 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class RegisterRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email: EmailStr
+    name: str = Field(min_length=1, max_length=120)
+    password: str = Field(min_length=8, max_length=128)
+
+
 class RefreshRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -30,6 +38,15 @@ class CurrentUserResponse(BaseModel):
     name: str
     role: Literal["member", "curator"]
     is_active: bool
+
+
+class PendingUserResponse(BaseModel):
+    id: str
+    email: EmailStr
+    name: str
+    role: Literal["member", "curator"]
+    is_active: bool
+    created_at: datetime
 
 
 class TokenPair(BaseModel):
@@ -54,6 +71,8 @@ __all__ = [
     "CurrentUserResponse",
     "LoginRequest",
     "LoginResponse",
+    "PendingUserResponse",
+    "RegisterRequest",
     "RefreshRequest",
     "RefreshResponse",
     "TokenPair",
