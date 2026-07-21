@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -34,10 +32,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-def _normalize_origins(origins: Iterable[str]) -> list[str]:
-    return [origin.rstrip("/") for origin in origins]
-
-
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(
@@ -51,10 +45,10 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_normalize_origins(settings.backend_cors_origins),
+        allow_origins=settings.backend_cors_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type"],
+        allow_methods=["*"],
+        allow_headers=["*"],
         max_age=600,
     )
     app.add_middleware(SecurityHeadersMiddleware)

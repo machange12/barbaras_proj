@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     environment: Literal["local", "test", "staging", "production"] = "local"
     testing: bool = False
     api_v1_prefix: str = "/api/v1"
-    backend_cors_origins: list[str] = Field(default_factory=list)
+    backend_cors_origins: list[str] = Field(default_factory=lambda: ["*"])
 
     database_url: str = "postgresql+psycopg://salon:salon@localhost:5432/salon"
     database_pool_size: int = 10
