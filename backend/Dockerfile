@@ -21,6 +21,26 @@ RUN pip install --upgrade pip \
 
 EXPOSE 8000
 
-# Run migrations before starting the server.
-CMD alembic upgrade head \
+# Check for orphaned enum types, run migrations, then start the server.
+CMD python -c "\
+import psycopg, os; \
+url = os.environ['DATABASE_URL']; \
+url = url.replace('postgresql+psycopg://', 'postgresql://').replace('postgres://', 'postgresql://'); \
+conn = psycopg.connect(url); \
+conn.autocommit = True; \
+cur = conn.cursor(); \
+cur.execute(\"\"\" \
+    DO $$ BEGIN \
+        IF NOT EXISTS ( \
+            SELECT 1 FROM information_schema.columns \
+            WHERE table_name = 'users' AND column_name = 'role' \
+        ) THEN \
+            DROP TYPE IF EXISTS user_role; \
+            DROP TYPE IF EXISTS application_status; \
+        END IF; \
+    END $$; \
+\"\"\"); \
+conn.close(); \
+print('Checked orphaned types')" \
+    && alembic upgrade head \
     && uvicorn app.main:app --host 0.0.0.0 --port 8000
