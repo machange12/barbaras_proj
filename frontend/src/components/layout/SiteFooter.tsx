@@ -1,7 +1,6 @@
 import { Mail, MessageSquareQuote } from 'lucide-react';
 
 const CONTACT_EMAIL = 'curator@thereadingsalon.example';
-const WHATSAPP_LINK = 'https://wa.me/';
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -23,16 +22,10 @@ export function SiteFooter() {
             <Mail aria-hidden="true" className="size-4" />
             {CONTACT_EMAIL}
           </a>
-          <a
-            aria-label="Open the Salon's WhatsApp community"
-            className="flex items-center gap-2 transition hover:text-[#f8efe0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass"
-            href={WHATSAPP_LINK}
-            rel="noreferrer"
-            target="_blank"
-          >
+          <div className="flex items-center gap-2 text-parchment/60">
             <MessageSquareQuote aria-hidden="true" className="size-4" />
-            WhatsApp community
-          </a>
+            WhatsApp shared after approval
+          </div>
           <div className="pt-2 text-parchment/60">© {year} The Salon. All rights reserved.</div>
         </div>
       </div>

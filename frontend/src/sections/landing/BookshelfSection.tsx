@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { readingBooks, readingPrompts } from '../../content/landing';
 
 export function BookshelfSection() {
@@ -42,20 +43,25 @@ export function BookshelfSection() {
           <div className="grid gap-4 md:grid-cols-2">
             {readingBooks.map((book) => (
               <motion.article
-                className="book-card group relative overflow-hidden rounded-[1rem] bg-[#2b1e17]/80 p-5"
+                className="book-card group relative overflow-hidden rounded-[1rem] bg-[#2b1e17]/80"
                 key={book.title}
                 whileHover={{ y: -6, rotate: -1, scale: 1.01 }}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${book.accent} opacity-70`} />
-                <div className="relative">
-                  <p className="text-xs uppercase tracking-[0.24em] text-parchment/70">{book.author}</p>
-                  <h3 className="mt-3 font-serif text-xl text-[#f8efe0]">{book.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-parchment/80">{book.detail}</p>
-                  <div className="mt-5 flex items-center justify-between text-xs uppercase tracking-[0.22em] text-[#f8efe0]/75">
-                    <span>{book.meta}</span>
-                    <span className="opacity-0 transition group-hover:opacity-100">Open</span>
+                <Link
+                  className="block min-h-full p-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass"
+                  to={`/books/${book.slug}`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${book.accent} opacity-70`} />
+                  <div className="relative">
+                    <p className="text-xs uppercase tracking-[0.24em] text-parchment/70">{book.author}</p>
+                    <h3 className="mt-3 font-serif text-xl text-[#f8efe0]">{book.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-parchment/80">{book.detail}</p>
+                    <div className="mt-5 flex items-center justify-between text-xs uppercase tracking-[0.22em] text-[#f8efe0]/75">
+                      <span>{book.meta}</span>
+                      <span className="opacity-0 transition group-hover:opacity-100">Open</span>
+                    </div>
                   </div>
-                </div>
+                </Link>
               </motion.article>
             ))}
           </div>

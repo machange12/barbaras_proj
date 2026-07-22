@@ -4,11 +4,13 @@ export type LandingPrinciple = {
 };
 
 export type LandingBook = {
+  slug: string;
   title: string;
   author: string;
   detail: string;
   meta: string;
   accent: string;
+  discussionFocus: string;
 };
 
 export type LandingArchiveEntry = {
@@ -49,32 +51,44 @@ export const principles: ReadonlyArray<LandingPrinciple> = [
 
 export const readingBooks: ReadonlyArray<LandingBook> = [
   {
+    slug: 'the-social-contract',
     title: 'The Social Contract',
     author: 'Jean-Jacques Rousseau',
     detail: 'The terms of civic life, written with an almost architectural calm.',
-    meta: 'Current reading • 2 weeks',
+    meta: 'Current reading - 2 weeks',
     accent: 'from-[#5c4033] to-[#2b1e17]',
+    discussionFocus:
+      'How does consent become legitimate authority, and where does the argument strain under the pressure of real civic life?',
   },
   {
+    slug: 'the-wealth-of-nations',
     title: 'The Wealth of Nations',
     author: 'Adam Smith',
     detail: 'A study of exchange, appetite, and the quiet order of markets.',
-    meta: 'Discussion notes • Thursday',
+    meta: 'Discussion notes - Thursday',
     accent: 'from-[#3e2a1f] to-[#1f2a2e]',
+    discussionFocus:
+      'What moral assumptions sit underneath market order, and how should a reader notice them without flattening the book into economics alone?',
   },
   {
+    slug: 'the-birth-of-tragedy',
     title: 'The Birth of Tragedy',
     author: 'Friedrich Nietzsche',
     detail: 'An inquiry into form, ritual, and the making of modern feeling.',
-    meta: 'Essay circle • Next week',
+    meta: 'Essay circle - Next week',
     accent: 'from-[#3b1f1f] to-[#2b1e17]',
+    discussionFocus:
+      'What does tragedy preserve that rational explanation cannot, and why does Nietzsche make art carry so much philosophical weight?',
   },
   {
+    slug: 'the-history-of-the-peloponnesian-war',
     title: 'The History of the Peloponnesian War',
     author: 'Thucydides',
     detail: 'A reminder that public argument survives by discipline and memory.',
-    meta: 'Archive note • Reserved',
+    meta: 'Archive note - Reserved',
     accent: 'from-[#5c4033] to-[#3e2a1f]',
+    discussionFocus:
+      'How do ambition, fear, and public speech shape political collapse when institutions are placed under extreme strain?',
   },
 ];
 
@@ -119,11 +133,11 @@ export const essayItems: ReadonlyArray<LandingEssay> = [
 
 export const eventItems: ReadonlyArray<LandingEvent> = [
   {
-    title: 'Salon Evening • March 18',
+    title: 'Salon Evening - March 18',
     detail: 'A guided discussion on political friendship and the price of loyalty.',
   },
   {
-    title: 'Reading Circle • April 2',
+    title: 'Reading Circle - April 2',
     detail: 'A slow reading of selected passages from civic and literary essays.',
   },
 ];

@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { RequireAuth } from '../components/auth/RequireAuth'
 import { RootLayout } from '../components/layout/RootLayout'
+import { BookDetailPage } from '../pages/books/BookDetailPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { CuratorDashboard } from '../pages/curator/CuratorDashboard'
 import { HistoryPage } from '../pages/history/HistoryPage'
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />,
+      },
+      {
+        path: 'books/:slug',
+        element: <BookDetailPage />,
       },
       {
         path: 'curator',
