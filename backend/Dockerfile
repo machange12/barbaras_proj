@@ -33,6 +33,7 @@ cur.execute(\"SELECT 1 FROM information_schema.columns WHERE table_name = 'users
 has_role = cur.fetchone() is not None; \
 cur.execute('DROP TYPE IF EXISTS user_role') if not has_role else None; \
 cur.execute('DROP TYPE IF EXISTS application_status') if not has_role else None; \
+cur.execute('DROP TYPE IF EXISTS material_type') if not has_role else None; \
 conn.close(); \
 print('Checked orphaned types')" \
     && alembic upgrade head \

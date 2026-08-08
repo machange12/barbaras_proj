@@ -26,6 +26,12 @@ class ApplicationCreate(BaseModel):
         return value
 
 
+class ApplicationStatusUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: str
+
+
 class ApplicationSummary(BaseModel):
     """Lightweight projection used in lists; full payload is in `data`."""
     id: str
@@ -39,6 +45,7 @@ class ApplicationResponse(BaseModel):
     status: str
     message: str
     received_at: datetime
+    whatsapp_invite_sent: bool = False
     data: dict[str, str]
 
     @classmethod

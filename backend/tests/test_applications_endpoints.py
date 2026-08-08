@@ -64,6 +64,7 @@ def test_list_returns_submissions_when_curator(client, seeded_curator, db_sessio
 
 
 def test_admin_can_update_application_status(client, seeded_curator, db_session):
+    from app.models import Application
     from app.schemas.applications import ApplicationCreate
     service = ApplicationService(db_session)
     submitted = service.submit(
@@ -74,10 +75,19 @@ def test_admin_can_update_application_status(client, seeded_curator, db_session)
             intent="intent content long enough",
         )
     )
+    assert submitted.data["email"] == "ada@example.org"
+    application = db_session.query(Application).filter_by(email="ada@example.org").one()
 
-    response = client.patch(  # type: ignore[attr-defined]
-        f"/api/v1/applications/{submitted.data['email']}",  # placeholder path
-        json={"status": "accepted"},
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={"email": seeded_curator.email, "password": "Sup3r-Secret!"},
     )
-    # Endpoint not implemented yet (Phase 2 dependency); absent route returns 405/404.
-    assert response.status_code in (404, 405)
+    access_token = login_response.json()["tokens"]["access_token"]
+
+    response = client.patch(
+        f"/api/v1/applications/{application.id}/status",
+        json={"status": "accepted"},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "accepted"

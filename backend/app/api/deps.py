@@ -83,6 +83,16 @@ def require_curator(user: Annotated[User | None, Depends(get_current_user)]) -> 
     return user
 
 
+def require_authenticated(user: Annotated[User | None, Depends(get_current_user)]) -> User:
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
+
+
 def allowed_roles(roles: Iterable[UserRole]):
     allowed = set(roles)
 

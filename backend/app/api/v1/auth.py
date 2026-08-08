@@ -13,9 +13,9 @@ from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
     PendingUserResponse,
-    RegisterRequest,
     RefreshRequest,
     RefreshResponse,
+    RegisterRequest,
     TokenPair,
 )
 from app.services.auth_service import AuthService

@@ -35,6 +35,7 @@ class Application(TimestampMixin, Base):
         index=True,
     )
     curator_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    whatsapp_invite_sent: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     def __repr__(self) -> str:
         return f"<Application {self.email} status={self.status.value}>"

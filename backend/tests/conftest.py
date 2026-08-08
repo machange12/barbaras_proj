@@ -126,6 +126,22 @@ def seeded_curator(db_session):
 
 
 @pytest.fixture
+def seeded_member(db_session):
+    from app.services.user_service import UserService
+
+    service = UserService(db_session)
+    member = service.create_user(
+        email="member@example.org",
+        name="Member",
+        password="Sup3r-Secret!",  # noqa: S106 - test fixture only
+        role="member",
+        is_active=True,
+    )
+    db_session.commit()
+    return member
+
+
+@pytest.fixture
 def require_live_postgres():
     """Marker alias: tests that need live Postgres opt in via THIS mark."""
     if os.environ.get("REQUIRE_LIVE_POSTGRES") != "1":

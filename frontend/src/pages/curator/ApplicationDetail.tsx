@@ -1,5 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { submissionsApi, applicationKeys } from '../../lib/api/applications';
+import { ApiError } from '../../lib/api/client';
+
+const WHATSAPP_GROUP_LINK = import.meta.env.VITE_WHATSAPP_GROUP_LINK ?? '#';
 
 const STATUS_COLORS: Record<string, string> = {
   received: 'bg-brass/20 text-brass',
@@ -9,10 +12,34 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function ApplicationDetail({ id, onBack }: { id: string; onBack: () => void }) {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({
     queryKey: applicationKeys.detail(id),
     queryFn: () => submissionsApi.get(id),
   });
+
+  const invalidate = () => void queryClient.invalidateQueries({ queryKey: applicationKeys.detail(id) });
+
+  const accept = useMutation({
+    mutationFn: () => submissionsApi.updateStatus(id, 'accepted'),
+    onSuccess: invalidate,
+  });
+
+  const sendWhatsapp = useMutation({
+    mutationFn: () => submissionsApi.sendWhatsappInvite(id),
+    onSuccess: () => {
+      invalidate();
+      window.open(WHATSAPP_GROUP_LINK, '_blank', 'noopener,noreferrer');
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 409) invalidate();
+    },
+  });
+
+  const whatsappAlreadyRecorded =
+    sendWhatsapp.isError &&
+    sendWhatsapp.error instanceof ApiError &&
+    sendWhatsapp.error.status === 409;
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16 text-parchment">
@@ -60,6 +87,46 @@ export function ApplicationDetail({ id, onBack }: { id: string; onBack: () => vo
               timeStyle: 'short',
             })}
           </p>
+
+          {(data.status === 'received' || data.status === 'reviewed') && (
+            <div className="mb-6">
+              <button
+                onClick={() => accept.mutate()}
+                disabled={accept.isPending}
+                className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+              >
+                {accept.isPending ? 'Accepting...' : 'Accept application'}
+              </button>
+              {accept.isError && (
+                <p className="mt-2 text-sm text-red-300">Unable to accept this application.</p>
+              )}
+            </div>
+          )}
+
+          {data.status === 'accepted' &&
+            (data.whatsapp_invite_sent ? (
+              <div className="mb-6 inline-flex items-center gap-2 rounded-xl border border-brass/20 bg-brass/10 px-5 py-2.5 text-sm text-brass">
+                Invite sent
+              </div>
+            ) : (
+              <div className="mb-6">
+                <button
+                  onClick={() => sendWhatsapp.mutate()}
+                  disabled={sendWhatsapp.isPending}
+                  className="rounded-xl border border-brass/40 bg-[#2b1e17] px-5 py-2.5 text-sm font-medium text-parchment/90 transition hover:border-brass hover:text-parchment disabled:cursor-not-allowed disabled:opacity-60"
+                  type="button"
+                >
+                  {sendWhatsapp.isPending ? 'Sending...' : 'Send WhatsApp Invite'}
+                </button>
+                {whatsappAlreadyRecorded && (
+                  <p className="mt-2 text-sm text-brass">Invite was already recorded</p>
+                )}
+                {sendWhatsapp.isError && !whatsappAlreadyRecorded && (
+                  <p className="mt-2 text-sm text-red-300">Unable to send the invite. Try again.</p>
+                )}
+              </div>
+            ))}
 
           <div className="mb-5">
             <div className="mb-2 text-xs uppercase tracking-widest text-parchment/40">

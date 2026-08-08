@@ -60,3 +60,11 @@ class ApplicationService:
         if updated is not None:
             self._session.commit()
         return updated
+
+    def mark_whatsapp_sent(self, application_id) -> Application | None:
+        application = self._repo.get(application_id)
+        if application is None:
+            return None
+        application.whatsapp_invite_sent = True
+        self._session.commit()
+        return application

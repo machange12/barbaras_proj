@@ -1,6 +1,6 @@
 export const REQUEST_TIMEOUT_MS = 10_000;
 
-type ApiErrorBody = {
+export type ApiErrorBody = {
   detail?: string | { msg: string; field?: string }[];
 };
 

@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     smtp_from_address: str = "salon@example.test"
     smtp_from_name: str = "The Reading Salon"
 
+    library_upload_dir: str = "/tmp/salon_library"  # noqa: S108 - ephemeral disk default, swap for object storage in prod
+
     initial_curator_email: str = ""
     initial_curator_password: str = ""
 

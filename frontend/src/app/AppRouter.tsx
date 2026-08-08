@@ -6,6 +6,7 @@ import { LoginPage } from '../pages/auth/LoginPage'
 import { CuratorDashboard } from '../pages/curator/CuratorDashboard'
 import { HistoryPage } from '../pages/history/HistoryPage'
 import { LandingPage } from '../pages/landing/LandingPage'
+import { LibraryPage } from '../pages/library/LibraryPage'
 import { SalonDifferencePage } from '../pages/society/SalonDifferencePage'
 
 const router = createBrowserRouter([
@@ -32,6 +33,14 @@ const router = createBrowserRouter([
       {
         path: 'books/:slug',
         element: <BookDetailPage />,
+      },
+      {
+        path: 'library',
+        element: (
+          <RequireAuth>
+            <LibraryPage />
+          </RequireAuth>
+        ),
       },
       {
         path: 'curator',

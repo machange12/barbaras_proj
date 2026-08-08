@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -7,6 +8,7 @@ from app.models import Application, ApplicationStatus, User
 from app.schemas.applications import (
     ApplicationCreate,
     ApplicationResponse,
+    ApplicationStatusUpdate,
     ApplicationSummary,
 )
 from app.services.application_service import ApplicationService
@@ -37,6 +39,7 @@ def _to_response(application: Application) -> ApplicationResponse:
         status=application.status.value,
         message="Application stored",
         received_at=application.created_at,  # type: ignore[arg-type]
+        whatsapp_invite_sent=application.whatsapp_invite_sent,
         data={
             "name": application.name,
             "email": application.email,
@@ -82,6 +85,52 @@ def get_application(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
         )
+    return _to_response(application)
+
+
+@router.patch("/{application_id}/status", response_model=ApplicationResponse)
+def update_application_status(
+    application_id: UUID,
+    payload: ApplicationStatusUpdate,
+    service: ApplicationServiceDep,
+    _: CurrentUserDep,
+) -> ApplicationResponse:
+    try:
+        new_status = ApplicationStatus(payload.status)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid application status",
+        ) from exc
+
+    application = service.set_status(application_id, new_status)
+    if application is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Application not found",
+        )
+    return _to_response(application)
+
+
+@router.post("/{application_id}/send-whatsapp", response_model=ApplicationResponse)
+def send_whatsapp_invite(
+    application_id: UUID,
+    service: ApplicationServiceDep,
+    _: CurrentUserDep,
+) -> ApplicationResponse:
+    application = service.get_by_id(application_id)
+    if application is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Application not found",
+        )
+    if application.whatsapp_invite_sent:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="WhatsApp invite was already sent",
+        )
+
+    application = service.mark_whatsapp_sent(application_id)
     return _to_response(application)
 
 
