@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -40,8 +39,9 @@ def create_app() -> FastAPI:
         redoc_url=None if settings.is_production else "/redoc",
     )
 
-    if settings.is_production:
-        app.add_middleware(HTTPSRedirectMiddleware)
+    # No HTTPSRedirectMiddleware: Render terminates TLS at the proxy, so uvicorn
+    # only ever sees http and an app-level redirect would loop forever. HSTS is
+    # still sent via SecurityHeadersMiddleware below.
 
     app.add_middleware(
         CORSMiddleware,
