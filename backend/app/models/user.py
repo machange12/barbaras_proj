@@ -42,6 +42,10 @@ class User(TimestampMixin, Base):
         back_populates="author",
         cascade="save-update, merge",
     )
+    messages: Mapped[list[Message]] = relationship(  # noqa: F821 - forward reference
+        back_populates="author",
+        cascade="save-update, merge",
+    )
     refresh_tokens: Mapped[list[RefreshToken]] = relationship(  # noqa: F821
         back_populates="user",
         cascade="all, delete-orphan",

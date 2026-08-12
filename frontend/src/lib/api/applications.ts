@@ -12,7 +12,6 @@ export type ApplicationResponse = {
   status: string;
   message: string;
   received_at: string;
-  whatsapp_invite_sent: boolean;
   data: Record<string, string>;
 };
 
@@ -73,15 +72,6 @@ export const submissionsApi = {
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       credentials: 'include',
       body: JSON.stringify({ status }),
-    });
-    if (!response.ok) throw await parseError(response);
-    return response.json() as Promise<ApplicationResponse>;
-  },
-  sendWhatsappInvite: async (id: string): Promise<ApplicationResponse> => {
-    const response = await fetch(apiUrl(`/applications/${id}/send-whatsapp`), {
-      method: 'POST',
-      headers: { ...authHeaders() },
-      credentials: 'include',
     });
     if (!response.ok) throw await parseError(response);
     return response.json() as Promise<ApplicationResponse>;

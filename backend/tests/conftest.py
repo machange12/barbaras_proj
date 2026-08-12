@@ -39,6 +39,16 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(marker)
 
 
+@pytest.fixture(autouse=True)
+def _clear_rate_limits():
+    """Rate-limit counters are in-process and keyed by client IP; reset per test."""
+    from app.core.rate_limit import reset_rate_limits
+
+    reset_rate_limits()
+    yield
+    reset_rate_limits()
+
+
 @pytest.fixture
 def sqlite_memory_engine():
     """Per-test SQLite engine; all tables created via Base.metadata.create_all."""

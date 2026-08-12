@@ -18,6 +18,7 @@ export const SECTION_NAV: ReadonlyArray<NavItem> = [
   { label: 'Debates', to: '/#debates' },
   { label: 'Apply', to: '/#apply' },
   { label: 'Library', to: '/library' },
+  { label: 'Chat', to: '/chat' },
 ];
 
 const ALL_NAV: ReadonlyArray<NavItem> = [...PRIMARY_NAV, ...SECTION_NAV];

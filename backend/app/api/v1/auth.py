@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
 from app.api.deps import DatabaseSession, get_current_user, require_curator
 from app.core.config import get_settings
+from app.core.rate_limit import rate_limit
 from app.models import User
 from app.schemas.auth import (
     CurrentUserResponse,
@@ -75,6 +76,16 @@ def login(
     request: Request,
     response: Response,
     service: AuthServiceDep,
+    _: Annotated[
+        None,
+        Depends(
+            rate_limit(
+                "auth:login",
+                limit=get_settings().login_rate_limit,
+                window_seconds=get_settings().login_rate_window_seconds,
+            )
+        ),
+    ],
 ) -> LoginResponse:
     user = service.authenticate(email=payload.email, password=payload.password)
     if user is None:

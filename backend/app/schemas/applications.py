@@ -45,7 +45,6 @@ class ApplicationResponse(BaseModel):
     status: str
     message: str
     received_at: datetime
-    whatsapp_invite_sent: bool = False
     data: dict[str, str]
 
     @classmethod

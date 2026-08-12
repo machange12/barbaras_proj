@@ -8,6 +8,7 @@ from app.core.security import normalize_email
 from app.database.repositories.application_repository import ApplicationRepository
 from app.models import Application, ApplicationStatus
 from app.schemas.applications import ApplicationCreate, ApplicationResponse
+from app.services.notifications import send_curator_notification
 
 
 class ApplicationService:
@@ -27,6 +28,17 @@ class ApplicationService:
         )
         self._repo.add(application)
         self._session.commit()
+        send_curator_notification(
+            subject="New membership application",
+            body=(
+                f"A new application arrived at The Reading Salon.\n\n"
+                f"Name: {application.name}\n"
+                f"Email: {application.email}\n\n"
+                f"Question: {application.question}\n\n"
+                f"Intent: {application.intent}\n\n"
+                f"Review it in the curator dashboard."
+            ),
+        )
         return ApplicationResponse(
             status=application.status.value,
             message="Application stored",
@@ -60,11 +72,3 @@ class ApplicationService:
         if updated is not None:
             self._session.commit()
         return updated
-
-    def mark_whatsapp_sent(self, application_id) -> Application | None:
-        application = self._repo.get(application_id)
-        if application is None:
-            return None
-        application.whatsapp_invite_sent = True
-        self._session.commit()
-        return application

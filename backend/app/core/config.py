@@ -46,6 +46,13 @@ class Settings(BaseSettings):
     smtp_port: int = 1025
     smtp_from_address: str = "salon@example.test"
     smtp_from_name: str = "The Reading Salon"
+    curator_notification_email: str = "barbara55nyachieo@gmail.com"
+
+    rate_limit_enabled: bool = True
+    applications_rate_limit: int = 10
+    applications_rate_window_seconds: int = 60
+    login_rate_limit: int = 10
+    login_rate_window_seconds: int = 300
 
     library_upload_dir: str = "/tmp/salon_library"  # noqa: S108 - ephemeral disk default, swap for object storage in prod
 

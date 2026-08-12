@@ -4,6 +4,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.deps import DatabaseSession, require_curator
+from app.core.config import get_settings
+from app.core.rate_limit import rate_limit
 from app.models import Application, ApplicationStatus, User
 from app.schemas.applications import (
     ApplicationCreate,
@@ -39,7 +41,6 @@ def _to_response(application: Application) -> ApplicationResponse:
         status=application.status.value,
         message="Application stored",
         received_at=application.created_at,  # type: ignore[arg-type]
-        whatsapp_invite_sent=application.whatsapp_invite_sent,
         data={
             "name": application.name,
             "email": application.email,
@@ -53,6 +54,16 @@ def _to_response(application: Application) -> ApplicationResponse:
 def create_application(
     payload: ApplicationCreate,
     service: ApplicationServiceDep,
+    _: Annotated[
+        None,
+        Depends(
+            rate_limit(
+                "applications:create",
+                limit=get_settings().applications_rate_limit,
+                window_seconds=get_settings().applications_rate_window_seconds,
+            )
+        ),
+    ],
 ) -> ApplicationResponse:
     return service.submit(payload)
 
@@ -109,28 +120,6 @@ def update_application_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
         )
-    return _to_response(application)
-
-
-@router.post("/{application_id}/send-whatsapp", response_model=ApplicationResponse)
-def send_whatsapp_invite(
-    application_id: UUID,
-    service: ApplicationServiceDep,
-    _: CurrentUserDep,
-) -> ApplicationResponse:
-    application = service.get_by_id(application_id)
-    if application is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Application not found",
-        )
-    if application.whatsapp_invite_sent:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="WhatsApp invite was already sent",
-        )
-
-    application = service.mark_whatsapp_sent(application_id)
     return _to_response(application)
 
 

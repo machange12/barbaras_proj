@@ -1,6 +1,6 @@
-import { Mail, MessageSquareQuote } from 'lucide-react';
+import { Mail, MessagesSquare } from 'lucide-react';
 
-const CONTACT_EMAIL = 'curator@thereadingsalon.example';
+const CONTACT_EMAIL = 'barbara55nyachieo@gmail.com';
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -16,15 +16,15 @@ export function SiteFooter() {
         </div>
         <div className="space-y-3 text-sm">
           <a
-            className="flex items-center gap-2 transition hover:text-[#f8efe0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass"
+            className="flex items-center gap-2 break-all transition hover:text-[#f8efe0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass"
             href={`mailto:${CONTACT_EMAIL}`}
           >
-            <Mail aria-hidden="true" className="size-4" />
+            <Mail aria-hidden="true" className="size-4 shrink-0" />
             {CONTACT_EMAIL}
           </a>
           <div className="flex items-center gap-2 text-parchment/60">
-            <MessageSquareQuote aria-hidden="true" className="size-4" />
-            WhatsApp shared after approval
+            <MessagesSquare aria-hidden="true" className="size-4" />
+            Salon chat opens after approval
           </div>
           <div className="pt-2 text-parchment/60">© {year} The Salon. All rights reserved.</div>
         </div>

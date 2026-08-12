@@ -7,7 +7,6 @@ import { EventsSection } from '../../sections/landing/EventsSection';
 import { HeroSection } from '../../sections/landing/HeroSection';
 import { HistorySection } from '../../sections/landing/HistorySection';
 import { NewsletterSection } from '../../sections/landing/NewsletterSection';
-import { WhatsAppSection } from '../../sections/landing/WhatsAppSection';
 import { SiteFooter } from '../../components/layout/SiteFooter';
 
 export function LandingPage() {
@@ -21,7 +20,6 @@ export function LandingPage() {
       <EssaysSection />
       <EventsSection />
       <NewsletterSection />
-      <WhatsAppSection />
       <ApplicationSection />
       <SiteFooter />
     </main>

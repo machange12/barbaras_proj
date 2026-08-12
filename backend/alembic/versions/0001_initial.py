@@ -4,6 +4,7 @@ Revision ID: 0001_initial
 Revises:
 Create Date: 2026-07-02 00:00:00.000000
 """
+
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -53,8 +54,18 @@ def upgrade() -> None:
         sa.Column("password_hash", sa.String(length=255), nullable=False),
         sa.Column("role", user_role, nullable=False, server_default="member"),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
     )
     op.create_index("ix_users_email", "users", ["email"], unique=True)
     op.create_index("ix_users_role", "users", ["role"])
@@ -69,8 +80,18 @@ def upgrade() -> None:
         sa.Column("intent", sa.Text(), nullable=False),
         sa.Column("status", application_status, nullable=False, server_default="received"),
         sa.Column("curator_note", sa.Text(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
     )
     op.create_index("ix_applications_status", "applications", ["status"])
     op.create_index("ix_applications_email", "applications", ["email"])
@@ -83,10 +104,25 @@ def upgrade() -> None:
         sa.Column("slug", sa.String(length=220), nullable=False),
         sa.Column("summary", sa.String(length=500), nullable=False),
         sa.Column("body", sa.Text(), nullable=False),
-        sa.Column("author_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+        sa.Column(
+            "author_id",
+            sa.Uuid(),
+            sa.ForeignKey("users.id", ondelete="RESTRICT"),
+            nullable=False,
+        ),
         sa.Column("published_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
     )
     op.create_index("ix_essays_title", "essays", ["title"])
     op.create_index("ix_essays_slug", "essays", ["slug"], unique=True)
@@ -97,12 +133,37 @@ def upgrade() -> None:
         "comments",
         sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("body", sa.Text(), nullable=False),
-        sa.Column("author_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("essay_id", sa.Uuid(), sa.ForeignKey("essays.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("parent_id", sa.Uuid(), sa.ForeignKey("comments.id", ondelete="CASCADE"), nullable=True),
+        sa.Column(
+            "author_id",
+            sa.Uuid(),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "essay_id",
+            sa.Uuid(),
+            sa.ForeignKey("essays.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "parent_id",
+            sa.Uuid(),
+            sa.ForeignKey("comments.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
         sa.Column("depth", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
     )
     op.create_index("ix_comments_author_id", "comments", ["author_id"])
     op.create_index("ix_comments_essay_id", "comments", ["essay_id"])
@@ -133,5 +194,7 @@ def downgrade() -> None:
     op.drop_index("ix_users_email", table_name="users")
     op.drop_table("users")
 
-    postgresql.ENUM(name="application_status", create_type=False).drop(op.get_bind(), checkfirst=True)
+    postgresql.ENUM(name="application_status", create_type=False).drop(
+        op.get_bind(), checkfirst=True
+    )
     postgresql.ENUM(name="user_role", create_type=False).drop(op.get_bind(), checkfirst=True)

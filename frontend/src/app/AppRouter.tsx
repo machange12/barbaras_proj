@@ -3,6 +3,7 @@ import { RequireAuth } from '../components/auth/RequireAuth'
 import { RootLayout } from '../components/layout/RootLayout'
 import { BookDetailPage } from '../pages/books/BookDetailPage'
 import { LoginPage } from '../pages/auth/LoginPage'
+import { ChatPage } from '../pages/chat/ChatPage'
 import { CuratorDashboard } from '../pages/curator/CuratorDashboard'
 import { HistoryPage } from '../pages/history/HistoryPage'
 import { LandingPage } from '../pages/landing/LandingPage'
@@ -39,6 +40,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <LibraryPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'chat',
+        element: (
+          <RequireAuth>
+            <ChatPage />
           </RequireAuth>
         ),
       },
