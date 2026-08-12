@@ -30,6 +30,7 @@ salon = "app.cli:main"
 
 [project.optional-dependencies]
 dev = [
+  "httpx2",
   "pytest>=9.0.0",
   "pytest-postgresql>=6.0.0",
   "ruff>=0.14.0",
