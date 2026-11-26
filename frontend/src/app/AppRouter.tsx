@@ -1,68 +1,25 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { RequireAuth } from '../components/auth/RequireAuth'
-import { RootLayout } from '../components/layout/RootLayout'
-import { BookDetailPage } from '../pages/books/BookDetailPage'
-import { LoginPage } from '../pages/auth/LoginPage'
-import { ChatPage } from '../pages/chat/ChatPage'
-import { CuratorDashboard } from '../pages/curator/CuratorDashboard'
-import { HistoryPage } from '../pages/history/HistoryPage'
-import { LandingPage } from '../pages/landing/LandingPage'
-import { LibraryPage } from '../pages/library/LibraryPage'
-import { SalonDifferencePage } from '../pages/society/SalonDifferencePage'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RootLayout } from '../components/layout/RootLayout';
+import { AboutPage } from '../pages/about/AboutPage';
+import { ArticlePage } from '../pages/article/ArticlePage';
+import { HomePage } from '../pages/home/HomePage';
+import { NotFoundPage } from '../pages/NotFoundPage';
+import { SectionPage } from '../pages/section/SectionPage';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     children: [
-      {
-        index: true,
-        element: <LandingPage />,
-      },
-      {
-        path: 'history',
-        element: <HistoryPage />,
-      },
-      {
-        path: 'society',
-        element: <SalonDifferencePage />,
-      },
-      {
-        path: 'login',
-        element: <LoginPage />,
-      },
-      {
-        path: 'books/:slug',
-        element: <BookDetailPage />,
-      },
-      {
-        path: 'library',
-        element: (
-          <RequireAuth>
-            <LibraryPage />
-          </RequireAuth>
-        ),
-      },
-      {
-        path: 'chat',
-        element: (
-          <RequireAuth>
-            <ChatPage />
-          </RequireAuth>
-        ),
-      },
-      {
-        path: 'curator',
-        element: (
-          <RequireAuth requireCurator>
-            <CuratorDashboard />
-          </RequireAuth>
-        ),
-      },
+      { index: true, element: <HomePage /> },
+      { path: 'about', element: <AboutPage /> },
+      { path: ':section', element: <SectionPage /> },
+      { path: ':section/:slug', element: <ArticlePage /> },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
-])
+]);
 
 export function AppRouter() {
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 }

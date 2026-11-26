@@ -1,85 +1,89 @@
-# Deployment Guide - The Reading Salon
+# Deployment Guide — BARBIE
 
-## Fastest Path: Render Backend And DB + Vercel Frontend
+BARBIE is a static site. There is no backend, no database, and no server-side
+environment variables: the build produces `frontend/dist`, and that folder is the
+whole deployment.
 
-### 1. Push To GitHub
+---
 
-```bash
-git add -A
-git commit -m "feat: curator dashboard, CI, render deploy config"
-git push origin main
-```
+## Option A — Render Static Site (blueprint included)
 
-### 2. Deploy Backend And DB On Render
+`render.yaml` at the repo root already describes the service:
 
-1. Go to https://render.com, create a new Blueprint, and connect your repo.
-2. Render reads `render.yaml` and creates:
-   - `reading-salon-db` (free Postgres)
-   - `reading-salon-api` (Docker web service)
-3. After the first deploy, set the manual environment variables in the Render dashboard:
-   - `BACKEND_CORS_ORIGINS`: your Vercel URL, for example `https://reading-salon.vercel.app`
-   - `SMTP_HOST` and `SMTP_FROM_ADDRESS`: if you want email notifications
+| Field | Value |
+| --- | --- |
+| Type | Web service with `runtime: static` |
+| Build command | `cd frontend && npm ci && npm run build` |
+| Publish directory | `./frontend/dist` |
+| SPA rewrite | `/*` → `/index.html` |
 
-### 3. Create The First Curator
+Steps:
 
-In the Render dashboard, open `reading-salon-api` and then Shell:
+1. Push the repository to GitHub.
+2. On [Render](https://render.com), create a **Blueprint** and connect the repo.
+3. Render reads `render.yaml` and creates the static site `barbie-archive`.
+4. First deploy builds and publishes `frontend/dist`. Deep links such as
+   `/essays` resolve through the rewrite rule.
 
-```bash
-salon -e curator@yourdomain.com -n "Barbara" -p "StrongPassword123!"
-```
+No environment variables need to be set.
 
-### 4. Deploy Frontend On Vercel
+---
 
-```bash
+## Option B — Vercel
+
+```sh
 cd frontend
 npx vercel --prod
 ```
 
-Set this environment variable in the Vercel dashboard:
+`frontend/vercel.json` already contains the required SPA rewrite:
 
-```text
-VITE_API_BASE_URL = https://reading-salon-api.onrender.com
+```json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
 ```
 
-### 5. Smoke Test
+No environment variables are required.
 
-- [ ] `GET https://reading-salon-api.onrender.com/api/v1/health/ready` returns `{"status":"ok"}`
-- [ ] Submit an application from the public landing page
-- [ ] Sign in at `/login` with the curator account
-- [ ] Navigate to `/curator` and see the application list
-- [ ] Click `Review` on the submitted application
+---
 
-## Environment Variables
+## Option C — Netlify / GitHub Pages / any static host
 
-| Variable | Where | Value |
-|---|---|---|
-| `BACKEND_CORS_ORIGINS` | Render | `https://your-frontend.vercel.app` |
-| `VITE_API_BASE_URL` | Vercel | `https://reading-salon-api.onrender.com` |
-| `SMTP_HOST` | Render | your SMTP provider |
-| `SMTP_FROM_ADDRESS` | Render | verified sender address |
+```sh
+cd frontend
+npm ci
+npm run build
+```
 
-All other backend environment variables are auto-generated or set in `render.yaml`.
+Publish `frontend/dist` and add a single rewrite so the client router can handle
+deep links:
 
-## What Was Added In This Deployment Pass
+| Host | Rule |
+| --- | --- |
+| Netlify | `/*  /index.html  200` in `public/_redirects` or the dashboard |
+| Vercel | see `frontend/vercel.json` |
+| Render | see `render.yaml` |
+| GitHub Pages | use a 404 page that serves `index.html`, or a hash router |
 
-### Frontend
+---
 
-- `src/pages/curator/CuratorDashboard.tsx`: application list with status filter
-- `src/pages/curator/ApplicationDetail.tsx`: full application detail view
-- `src/app/AppRouter.tsx`: `/curator` route now loads `CuratorDashboard`
-- `src/lib/api/applications.ts`: `list` and `get` now send the `Authorization` header
+## Smoke Test
 
-### Infrastructure
+- [ ] `/` shows the book entrance; the seal opens it and the homepage appears
+- [ ] Revisiting in the same tab skips the entrance (session memory)
+- [ ] "Enter without animation" reaches the homepage immediately
+- [ ] `/essays`, `/notes`, `/creative-work`, `/library` each render their empty state
+- [ ] Header navigation switches sections; the mobile menu opens and closes
+- [ ] Footer links to `/about`
+- [ ] A deep link (e.g. `/essays`) returns `index.html`, not a 404
+- [ ] An unknown path (e.g. `/nope`) renders the 404 page
+- [ ] Browser back/forward moves between pages without losing the entrance state
+- [ ] With reduced motion enabled, the entrance and page turns become simple fades
 
-- `render.yaml`: Render blueprint for backend Docker service, frontend static service, and Postgres
-- `.github/workflows/ci.yml`: CI on every push/PR with pytest, ruff, npm lint, and build
-- `backend/Dockerfile`: runs `alembic upgrade head` before uvicorn starts
+---
 
-## Still To Do
+## Removing The Old Salon Deployment
 
-- Rate limiting on `/applications` and `/auth/login`
-- Email notifications on new applications once SMTP credentials are ready
-- Curator note/status update endpoint and UI controls
-- Structured logging
-- Error tracking
-- 404 and error boundary pages
+The previous FastAPI backend, Render Postgres database, and Render API service are
+no longer part of this project. On Render, delete any leftover `reading-salon-api`
+and `reading-salon-db` services from the old Blueprint. On Vercel, remove the
+`VITE_API_BASE_URL` variable — nothing reads it anymore.

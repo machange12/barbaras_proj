@@ -1,137 +1,135 @@
-# The Reading Salon
+# BARBIE
 
-The Reading Salon is a private reading-society web app with a React/Vite frontend and a FastAPI backend. The current product surface includes a polished public landing page, application submission flow, JWT-based curator login, protected application review endpoints, Postgres persistence, Alembic migrations, and Docker support for local backend development.
+**A personal archive of thought, writing, and creative work.**
+
+BARBIE is a static literary archive: a React + Vite single-page app with structured,
+Markdown-backed content and no backend, database, authentication, or paid services.
 
 ---
 
-## Deployment Status (July 2026)
+## What It Is
 
-### Live Services
+An interactive antique-book entrance opens into a dark, library-toned archive with
+five destinations:
 
-| Service | Host | URL / Identifier | Status |
-| --- | --- | --- | --- |
-| Frontend | Vercel | `the-reading-salon.vercel.app` | ✅ Deployed |
-| Backend API | Render | `reading-salon-api.onrender.com` | ✅ Running |
-| Database | Render Postgres | `reading-salon-db` (PostgreSQL 18) | ✅ Available |
+| Route | Page |
+| --- | --- |
+| `/` | Home — masthead, selected writing, section index |
+| `/essays` | Essays section index |
+| `/notes` | Notes section index |
+| `/creative-work` | Creative Work section index |
+| `/library` | Library section index |
+| `/:section/:slug` | Article reading page (ivory paper, prev/next) |
+| `/about` | About (secondary footer link) |
+| `*` | 404 |
 
-### What Is Working
+Navigation: **Home · Essays · Notes · Creative Work · Library**, with **About** as a
+secondary footer link.
 
-- Health check: `GET /api/v1/health/ready` returns `{"status":"ok"}`
-- Database migrations ran clean (`0001_initial` + `0002_refresh_tokens`)
-- First curator account created (`curator@yourdomain.com`)
-- Login API confirmed working via direct POST — returns JWT access token
-- Frontend deployed and hitting the correct backend URL
+---
 
-### Blocking Issue: Login From Frontend
+## Stack
 
-The frontend login returns "Invalid email or password" despite the API working correctly when called directly. Root cause is a CORS preflight failure — the `OPTIONS` request to `/api/v1/auth/login` returns `400 Bad Request`.
+- **React 19** + **TypeScript** + **Vite 8**
+- **React Router 7** (client-side routing, SPA rewrite on deploy)
+- **Tailwind CSS 4** via `@tailwindcss/vite`, with a design-token `@theme` block
+- **framer-motion** for the book entrance and page-turn transitions
+- **react-markdown** + **remark-gfm** for article bodies
+- **Oxlint** for linting
 
-**Cause:** The frontend is being served from a Vercel preview URL (`the-reading-salon-an9239zb5-...vercel.app`) which is not in the backend's `BACKEND_CORS_ORIGINS` allowlist.
+No API client, no state server, no environment variables are required.
 
-**Fix needed:**
+---
 
-1. Go to Render → `reading-salon-api` → Environment
-2. Update `BACKEND_CORS_ORIGINS` to include both the production and preview URLs:
+## Repository Layout
 
-```json
-["https://the-reading-salon.vercel.app","https://the-reading-salon-an9239zb5-matewmachange-8463s-projects.vercel.app"]
+```
+frontend/
+  index.html               Document metadata, favicon, noscript fallback
+  public/favicon.svg       Archive seal mark
+  src/
+    App.tsx                Entrance gate wraps the router
+    app/AppRouter.tsx      Route table
+    components/
+      entrance/            EntranceGate (sessionStorage) + EntranceScreen (book)
+      layout/              RootLayout, SiteHeader, SiteFooter
+      editorial/           EntryList, FeaturedEntry, Markdown, EmptyState, ReadingProgress
+      ui/                  Seal, Reveal
+    content/
+      site.ts              Masthead, tagline, epigraph, contact
+      sections.ts          The four sections + empty-state copy
+      types.ts             WritingEntry / Section types
+      entries/*.ts         Content arrays (currently empty — see below)
+      index.ts             Selectors: getEntry, getRecentEntries, getAdjacentEntries…
+    pages/                 home, section, article, about, NotFoundPage
+    lib/                   formatDate, getReadingTime, useDocumentTitle
+    styles/global.css      Design tokens, typography, book/entrance styles
+.github/workflows/ci.yml   Lint + production build
+render.yaml                Render static-site blueprint (SPA rewrite)
+DEPLOY.md                  Deployment guide
+progress.md                Transformation log and remaining work
 ```
 
-3. Redeploy the API
-4. Investigate why `https://the-reading-salon.vercel.app/login` returns 404 — the production frontend may not have the `/login` route built or the Vercel production deployment may be stale
-
 ---
 
-## Known Fixes Applied During This Deployment
+## Content Status
 
-### 1. psycopg v3 Driver Mismatch
+The content arrays in `frontend/src/content/entries/` are **intentionally empty**.
+No articles, biographies, testimonials, or other placeholder intellectual content has
+been invented. Every empty section renders a clearly labelled empty state.
 
-`alembic/env.py` was using the `postgresql://` scheme which tries to load `psycopg2`. Fixed by rewriting the URL to `postgresql+psycopg://` in `get_database_url()`.
+### Adding a piece
 
-### 2. Enum Duplicate Error on Migration
+Append an object to the matching file in `src/content/entries/`:
 
-SQLAlchemy's `sa.Enum` with `create_type=False` does not suppress enum creation during `op.create_table` when using psycopg3. Fixed by switching to `sqlalchemy.dialects.postgresql.ENUM` which correctly respects `create_type=False`.
-
-### 3. Orphaned Enum Types in DB
-
-Previous failed migration attempts left `user_role` and `application_status` enum types in the DB without the corresponding tables. Fixed by adding DROP statements to the Dockerfile CMD before running `alembic upgrade head`.
-
-### 4. `BACKEND_CORS_ORIGINS` Format
-
-Render rejected a plain string value for this field. Must be a JSON array:
-
-```json
-["https://your-frontend.vercel.app"]
+```ts
+export const essays: readonly WritingEntry[] = [
+  {
+    slug: 'on-slow-reading',
+    title: 'On Slow Reading',
+    section: 'essays',
+    date: '2026-11-25',
+    summary: 'Optional standfirst shown under the title.',
+    tags: ['attention'],
+    featured: true,          // optional: shows on the homepage
+    body: '# Markdown body…',
+  },
+];
 ```
 
----
-
-## Current Stack
-
-- `frontend/` — Vite, React 19, React Router 7, TanStack Query, framer-motion, Tailwind 4, Oxlint
-- `backend/` — FastAPI, SQLAlchemy 2, Pydantic v2, Alembic, Typer CLI, JWT auth, Postgres, Docker
-- Database — Postgres 18 on Render; tests use SQLite unless live Postgres is explicitly enabled
-- Email — SMTP settings exist; local Docker includes MailHog; not yet configured in production
-
-## Current API Surface
-
-| Method | Path | Auth | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/health/live` | none | Process liveness |
-| `GET` | `/api/v1/health/ready` | none | Database readiness |
-| `POST` | `/api/v1/applications` | none | Submit a membership application |
-| `GET` | `/api/v1/applications` | curator bearer token | Paginated application review |
-| `GET` | `/api/v1/applications/{id}` | curator bearer token | Single application review |
-| `POST` | `/api/v1/auth/login` | none | Issue access token and refresh cookie |
-| `POST` | `/api/v1/auth/refresh` | refresh token/cookie | Rotate refresh token and issue a new access token |
-| `POST` | `/api/v1/auth/logout` | optional bearer token | Revoke refresh token/cookie |
-| `GET` | `/api/v1/auth/me` | bearer token | Current user profile |
+`slug` must be unique within its section. Reading time is computed from the body
+(~220 wpm) unless `readingTime` is supplied. Prev/next links follow date order within
+the section. The section index, homepage, and 404 counts update automatically.
 
 ---
 
-## Remaining Work Before Production-Ready
+## Development
 
-### Immediate (blocking curator access)
+```sh
+cd frontend
+npm install
+npm run dev      # http://127.0.0.1:5173
+npm run lint     # Oxlint
+npm run build    # tsc -b + vite build → dist/
+npm run preview  # serve the production bundle
+```
 
-- [ ] Fix CORS — add all Vercel URLs to `BACKEND_CORS_ORIGINS` on Render
-- [ ] Fix production frontend 404 on `/login` — redeploy Vercel or check router config
-
-### Short Term
-
-- [ ] Rate limiting on `/applications` and `/auth/login`
-- [ ] Email notifications on new applications (needs SMTP credentials)
-- [ ] Curator note/status update endpoint and UI controls
-- [ ] Structured logging and error tracking
-- [ ] 404 and error boundary pages
-
-### Infrastructure Cleanup
-
-- [ ] Remove orphaned-enum DROP commands from Dockerfile CMD once confirmed stable
-- [ ] Change DB credentials (external URL was exposed during debugging)
-- [ ] Add uptime monitor on `/api/v1/health/ready`
-- [ ] Confirm DB backups are enabled on Render
+Node.js 20+ is required.
 
 ---
 
-## Environment Variables
+## Deployment
 
-| Variable | Where | Value |
-| --- | --- | --- |
-| `BACKEND_CORS_ORIGINS` | Render | `["https://the-reading-salon.vercel.app"]` |
-| `VITE_API_BASE_URL` | Vercel | `https://reading-salon-api.onrender.com` |
-| `JWT_SECRET_KEY` | Render | auto-generated (32+ bytes) |
-| `DATABASE_URL` | Render | auto-wired from `reading-salon-db` |
-| `SMTP_HOST` | Render | not yet configured |
-| `SMTP_FROM_ADDRESS` | Render | not yet configured |
+See [DEPLOY.md](DEPLOY.md). In short: Render static site publishing
+`frontend/dist` with an SPA rewrite of `/*` → `/index.html`, or any static host
+(Vercel, Netlify, GitHub Pages) with the same rewrite rule.
 
 ---
 
-## Repo References
+## Accessibility & Motion
 
-- Backend details: `backend/README.md`
-- Frontend details: `frontend/README.md`
-- Backend settings: `backend/app/core/config.py`
-- API router: `backend/app/api/v1/`
-- Frontend API client: `frontend/src/lib/api/`
-- Local backend compose: `backend/docker-compose.yml`
-- Render blueprint: `render.yaml`
+- Skip-to-content link, `aria-current` navigation, labelled dialogs and controls.
+- `prefers-reduced-motion` collapses the entrance, page turns, and reveals to short
+  fades (or nothing).
+- The entrance always offers **Enter without animation**, and content stays mounted
+  behind an inert overlay so a failed or skipped animation can never trap the reader.
