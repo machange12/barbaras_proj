@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { EntranceScreen } from './EntranceScreen';
+import { EntranceCover } from './EntranceCover';
 
 const STORAGE_KEY = 'barbie:entered';
 
@@ -57,7 +57,7 @@ export function EntranceGate({ children }: { children: ReactNode }) {
           {children}
         </div>
       ) : null}
-      {!entered ? <EntranceScreen onEnter={handleEnter} onReveal={handleReveal} /> : null}
+      {!entered ? <EntranceCover onEnter={handleEnter} onReveal={handleReveal} /> : null}
     </>
   );
 }

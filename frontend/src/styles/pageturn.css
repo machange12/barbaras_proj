@@ -1,0 +1,266 @@
+/* =============================================================================
+   Page-turn engine
+   --pt-a   current hinge angle in degrees (0 … 96, signed by direction)
+   --pt-p   progress of the current flip (0 … 1)
+   --pt-cos projected width of the leaf as a fraction of the stage width
+   Per-slice shading is written by the engine as `--d` (dark) / `--g` (gloss).
+   ============================================================================= */
+
+.pt {
+  --pt-a: 0;
+  --pt-p: 0;
+  --pt-cos: 1;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
+  touch-action: pan-y;
+}
+
+.pt:focus-visible {
+  outline: 2px solid var(--c-gold);
+  outline-offset: -4px;
+}
+
+.pt__layer {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.pt__layer--under {
+  z-index: 1;
+}
+
+.pt__layer--leaf {
+  z-index: 3;
+  transform-origin: left center;
+  transform: rotateY(calc(var(--pt-a) * 1deg));
+}
+
+.pt[data-dir='-1'] .pt__layer--leaf {
+  transform-origin: right center;
+}
+
+.pt__layer[data-idle='true'] {
+  transform: none;
+  backface-visibility: visible;
+}
+
+.pt__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--room-bg);
+  backface-visibility: hidden;
+}
+
+.pt__face--back {
+  transform: rotateY(180deg);
+  background:
+    repeating-linear-gradient(180deg, rgba(160, 142, 108, 0.07) 0 2px, transparent 2px 7px),
+    linear-gradient(100deg, #efe4cb 0%, #f7efdf 38%, #e9dcc0 100%);
+}
+
+/* the paper block seen while several pages are turned */
+.pt__pageblock {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, #f2e8d2 0 3px, #d8c8a5 3px 4px, #ece0c4 4px 8px),
+    linear-gradient(90deg, rgba(74, 22, 34, 0.22), transparent 12%);
+  box-shadow: inset 0 0 90px rgba(74, 22, 34, 0.35);
+}
+
+/* --- shaded slices: the curvature read ---------------------------------- */
+
+.pt__slices {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  pointer-events: none;
+}
+
+.pt__slice {
+  flex: 1 1 0;
+  background-image:
+    linear-gradient(180deg, rgba(255, 247, 226, var(--g, 0)) 0%, rgba(255, 247, 226, 0) 55%),
+    linear-gradient(180deg, rgba(5, 3, 4, var(--d, 0)) 0%, rgba(5, 3, 4, calc(var(--d, 0) * 1.35)) 100%);
+}
+
+/* free-edge thickness of the turning leaf */
+.pt__thickness {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  width: clamp(5px, 0.9vw, 13px);
+  background: repeating-linear-gradient(
+    180deg,
+    #f6efdc 0 3px,
+    #d6c5a2 3px 4px,
+    #eee3c9 4px 7px
+  );
+  box-shadow: -3px 0 14px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.pt__layer[data-leaf='fwd'] .pt__thickness {
+  right: 0;
+}
+
+.pt__layer[data-leaf='back'] .pt__thickness {
+  left: 0;
+}
+
+/* cast shadow on the revealed page */
+.pt__cast {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: calc(var(--pt-cos) * 100% + 8%);
+  background: linear-gradient(
+    90deg,
+    rgba(4, 2, 3, 0.72) 0%,
+    rgba(4, 2, 3, 0.42) 45%,
+    rgba(4, 2, 3, 0) 100%
+  );
+  opacity: calc(var(--pt-p) * 0.95);
+  pointer-events: none;
+}
+
+.pt[data-dir='-1'] .pt__cast {
+  left: auto;
+  right: 0;
+  background: linear-gradient(
+    270deg,
+    rgba(4, 2, 3, 0.72) 0%,
+    rgba(4, 2, 3, 0.42) 45%,
+    rgba(4, 2, 3, 0) 100%
+  );
+}
+
+/* --- dog-eared corner controls ------------------------------------------ */
+
+.pt__peel {
+  position: absolute;
+  bottom: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  width: clamp(58px, 8vw, 92px);
+  height: clamp(58px, 8vw, 92px);
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.pt__peel--next {
+  right: 0;
+}
+
+.pt__peel--prev {
+  left: 0;
+}
+
+.pt__peel-face {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, transparent 46%, rgba(247, 239, 223, 0.95) 47%, #e6d9bd 100%);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  transition: transform var(--dur-base) var(--ease-ui);
+  filter: drop-shadow(-3px -3px 8px rgba(0, 0, 0, 0.55));
+}
+
+.pt__peel--prev .pt__peel-face {
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  background: linear-gradient(225deg, transparent 46%, rgba(247, 239, 223, 0.95) 47%, #e6d9bd 100%);
+  filter: drop-shadow(3px -3px 8px rgba(0, 0, 0, 0.55));
+}
+
+.pt__peel:hover .pt__peel-face,
+.pt__peel:focus-visible .pt__peel-face {
+  transform: scale(1.12);
+}
+
+.pt__peel:focus-visible {
+  outline: 2px solid var(--c-gold);
+  outline-offset: -6px;
+}
+
+.pt__peel-glyph {
+  position: relative;
+  z-index: 2;
+  color: #4a3b34;
+  font-size: clamp(0.7rem, 1.6vw, 1rem);
+  line-height: 1;
+}
+
+.pt__peel-label {
+  position: absolute;
+  bottom: 4px;
+  z-index: 3;
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6b573f;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-ui);
+}
+
+.pt__peel:hover .pt__peel-label,
+.pt__peel:focus-visible .pt__peel-label {
+  opacity: 1;
+}
+
+/* --- fallback: no 3D, or reduced motion --------------------------------- */
+
+.pt[data-3d='off'] .pt__layer--leaf,
+.pt[data-motion='reduced'] .pt__layer--leaf {
+  transform: translateX(calc(var(--pt-p) * var(--pt-dir-sign, 1) * -14%));
+  opacity: calc(1 - var(--pt-p));
+}
+
+.pt[data-3d='off'] .pt__slices,
+.pt[data-motion='reduced'] .pt__slices,
+.pt[data-3d='off'] .pt__thickness,
+.pt[data-motion='reduced'] .pt__thickness,
+.pt[data-3d='off'] .pt__cast,
+.pt[data-motion='reduced'] .pt__cast {
+  display: none;
+}
+
+.pt[data-3d='off'],
+.pt[data-motion='reduced'] {
+  perspective: none;
+}
+
+/* dragging feedback: the leaf tracks the pointer directly */
+.pt[data-dragging='true'] .pt__layer--leaf {
+  transition: none;
+}
+
+.pt__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--c-paper);
+  color: var(--c-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}

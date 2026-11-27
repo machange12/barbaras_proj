@@ -1,0 +1,173 @@
+/* =============================================================================
+   Room theming — accents, surfaces and ornaments.
+
+   The accent for the active room is declared in content/rooms.ts and applied
+   as `--room-accent` on `.shell` by the stage; the rules here only consume it
+   so a room can be re-skinned without touching component markup.
+   ============================================================================= */
+
+.room {
+  position: relative;
+}
+
+/* faint light falling from the top of every room */
+.room::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 44% at 50% -6%, color-mix(in srgb, var(--room-accent) 16%, transparent), transparent 72%),
+    linear-gradient(180deg, rgba(255, 250, 238, 0.6), transparent 40%);
+  opacity: 0.9;
+}
+
+.room > * {
+  position: relative;
+}
+
+/* room-specific paper tints (kept subtle — the reading surface stays ivory) */
+.room[data-room='reading-chamber'] {
+  --room-paper: #f3f1e6;
+}
+
+.room[data-room='observation-room'] {
+  --room-paper: #f6efe9;
+}
+
+.room[data-room='theatre'] {
+  --room-paper: #f7eeea;
+}
+
+.room[data-room='library'] {
+  --room-paper: #f5f0e2;
+}
+
+.room[data-room='cabinet'] {
+  --room-paper: #f6f0f1;
+}
+
+.room[data-room='unfinished'] {
+  --room-paper: #f7f0ee;
+}
+
+.room[data-room='foyer'],
+.room[data-room='about'] {
+  --room-paper: var(--c-paper);
+}
+
+/* accent rules, chips and link underlines used across every room */
+.room a:focus-visible,
+.room-index a:focus-visible {
+  outline: 2px solid var(--room-accent);
+  outline-offset: 3px;
+}
+
+.room__rule {
+  height: 1px;
+  margin: clamp(1.5rem, 4vh, 3rem) 0;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--room-accent) 55%, transparent) 22%,
+    color-mix(in srgb, var(--room-accent) 85%, transparent) 50%,
+    color-mix(in srgb, var(--room-accent) 55%, transparent) 78%,
+    transparent
+  );
+}
+
+.room__ornament {
+  display: block;
+  margin: 0 auto;
+  color: color-mix(in srgb, var(--room-accent) 75%, #6b1b2a);
+  font-size: 0.85rem;
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Room index — the lobby list of every room in the book
+   --------------------------------------------------------------------------- */
+
+.room-index {
+  display: grid;
+  gap: clamp(0.9rem, 2.2vh, 1.6rem);
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+.room-index__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 0.4rem 1rem;
+  padding: clamp(0.9rem, 2.4vh, 1.4rem) clamp(0.9rem, 2vw, 1.4rem);
+  border: 1px solid color-mix(in srgb, var(--room-accent) 26%, var(--c-muted));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--room-accent) 5%, var(--c-paper));
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-ui),
+    transform var(--dur-fast) var(--ease-ui),
+    background-color var(--dur-fast) var(--ease-ui);
+}
+
+.room-index__item:hover,
+.room-index__item:focus-visible {
+  border-color: color-mix(in srgb, var(--room-accent) 70%, var(--c-muted));
+  background: color-mix(in srgb, var(--room-accent) 11%, var(--c-paper));
+  transform: translateY(-2px);
+}
+
+.room-index__number {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--room-accent) 80%, var(--c-ink));
+}
+
+.room-index__body {
+  min-width: 0;
+}
+
+.room-index__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.room-index__meta {
+  margin: 0.3rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--c-ink-soft);
+}
+
+.room-index__mark {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--room-accent) 85%, var(--c-ink));
+  transition: transform var(--dur-fast) var(--ease-ui);
+}
+
+.room-index__item:hover .room-index__mark {
+  transform: translateX(4px);
+}
+
+@media (max-width: 560px) {
+  .room-index__item {
+    grid-template-columns: auto 1fr;
+  }
+
+  .room-index__mark {
+    display: none;
+  }
+}

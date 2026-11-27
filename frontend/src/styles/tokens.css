@@ -1,0 +1,87 @@
+/* =============================================================================
+   BARBIE — design tokens
+   Single source of truth for colour, type, motion and room accents.
+   Naming: `--c-*` = raw palette, `--room-*` = per-room accents (overridden by
+   [data-room] in rooms.css), `--e-*` easing, `--dur-*` durations.
+   Tailwind's `@theme` block in global.css aliases these into `--color-*` so the
+   existing utility class names keep working unchanged.
+   ============================================================================= */
+
+:root {
+  /* --- core palette ------------------------------------------------------ */
+  --c-black: #0a0708;
+  --c-void: #100a0c;
+  --c-night: #170d10;
+  --c-oxblood: #2e0f16;
+  --c-wine: #4a1622;
+  --c-burgundy: #6b2130;
+  --c-crimson: #a4162c;
+  --c-pink: #e2a3b4;
+  --c-dusty-rose: #c9909a;
+  --c-deep-blue: #0d162b;
+  --c-blue: #16233f;
+  --c-blue-soft: #2c3f66;
+  --c-ivory: #f3e9d7;
+  --c-parchment: #e7d7ba;
+  --c-paper: #f7efdf;
+  --c-gold: #c9a45f;
+  --c-gold-soft: #b08a4c;
+  --c-gold-dim: #8a6a35;
+  --c-ink: #241a18;
+  --c-ink-soft: #4a3b34;
+  --c-muted: #b6a78d;
+  --c-wood: #3a2a20;
+  --c-wood-light: #55402f;
+
+  /* --- type -------------------------------------------------------------- */
+  --font-display: 'Playfair Display', 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-body: 'EB Garamond', 'Lora', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Lora', 'EB Garamond', Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 0.72rem;
+  --text-sm: 0.85rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --measure: 34rem;
+  --measure-wide: 46rem;
+
+  /* --- easing + durations ------------------------------------------------ */
+  /* page turn: accelerate into the swing, settle with a slight overshoot */
+  --ease-page: cubic-bezier(0.36, 0.06, 0.16, 1);
+  --ease-page-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* cover opening: heavy object, slow start, long settle */
+  --ease-cover: cubic-bezier(0.65, 0.02, 0.25, 1);
+  --ease-settle: cubic-bezier(0.2, 1.2, 0.4, 1);
+  --ease-ui: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --dur-fast: 160ms;
+  --dur-base: 320ms;
+  --dur-slow: 720ms;
+  --dur-turn: 620ms;
+  --dur-cover: 1500ms;
+
+  /* --- shell ------------------------------------------------------------- */
+  --shell-header: 3.75rem;
+  --shell-footer: 3.5rem;
+  --tap: 44px;
+  --focus-ring: 2px solid var(--c-gold);
+
+  /* --- room defaults (overridden per room) ------------------------------- */
+  --room-bg: var(--c-void);
+  --room-bg-2: var(--c-night);
+  --room-fg: var(--c-ivory);
+  --room-fg-muted: rgba(243, 233, 215, 0.72);
+  --room-faint: var(--c-muted);
+  --room-accent: var(--c-gold);
+  --room-accent-2: var(--c-burgundy);
+  --room-line: rgba(201, 164, 95, 0.28);
+  --room-surface: rgba(23, 13, 16, 0.72);
+  --room-paper: var(--c-paper);
+  --room-ink: var(--c-ink);
+}
+
+/* text-scale control for the reading view (set by ReadingView) */
+:root {
+  --reading-scale: 1;
+}
